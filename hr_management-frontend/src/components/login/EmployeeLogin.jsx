@@ -11,38 +11,7 @@ function EmployeeLogin() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    // useEffect(async () => {
-    //     const userResponse = await http.get(`${id}`);
-    //     const id = res.data.id;
-    //          console.log(id)
-    //     console.log("Employees", userResponse.data);
-    //     },[id])
-    // use
-    
-
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-
-    //     try {
-    //         // Send login request
-    //         const res = await http.post('/employees/login/', { email, password });
-
-    //         if (res.status === 200) {
-    //             // Assuming the response contains the employee ID
-    //          const id = res.data.id;
-    //          console.log(id)
-    //             // Navigate to the dashboard with the employee ID in the URL
-    //             navigate(`/employee_side_full/${id}`);
-    //         } else {
-    //             setError('Invalid credentials');
-    //         }
-    //     } catch (err) {
-    //         console.error(err);
-    //         setError('Invalid ');
-    //     }
-    // };
-
-
+   
     const handleSubmit = async (e) => {
         e.preventDefault();
     
