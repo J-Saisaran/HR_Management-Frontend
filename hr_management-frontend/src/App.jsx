@@ -60,7 +60,7 @@ function App() {
               <Route path='/employee_side_full/:id' element={<EmployeeSideFull />}></Route>
               <Route path='/employee_leave_submit/:id' element={<EmployeeLeaveSubmit />}></Route>
               {/* Candidate */}
-              <Route path="/recruitment_candidate" element={<RecruitmentCandidate />} />
+              {/* <Route path="/recruitment_candidate" element={<RecruitmentCandidate />} /> */}
               <Route path="/job_postings_view" element={<JobPostingsView />} />
               <Route path="/apply/:jobId" element={<ApplyJob />} />
               <Route path="/application_status/:jobId" element={<ApplicationStatus />} />
