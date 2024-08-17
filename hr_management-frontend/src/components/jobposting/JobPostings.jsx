@@ -133,7 +133,7 @@ const JobPostings = () => {
                                 http.get('//jobpostings')
                                     .then(res => setJobPostings(res.data))
                                     .catch(err => console.error(err));
-                                    window.location.reload();
+                                 
                             } catch (err) {
                                 console.error(err);
                             }

@@ -91,9 +91,9 @@ const [employees, setEmployees] = useState([]);
             .then(res => {
                 setEmployees([...employees, res.data]);
                 setOpen(false);
-                formik.resetForm();
-                // window.location.reload();
-                navigate('/employeelist')
+                formik.resetForm(true);
+                
+                navigate('/employeelist');
 
             })
             .catch(err => {
