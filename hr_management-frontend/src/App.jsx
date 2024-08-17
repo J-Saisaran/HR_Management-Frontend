@@ -23,7 +23,7 @@ import { CssBaseline, Container, Box } from '@mui/material';
 import Footer from './components/footer/Footer'; // Adjust the path as needed
 import JobPostingsView from './components/jobposting/JobPostingsView';
 import ApplyJob from './components/jobposting/ApplyJob';
-import ApplicationStatus from './components/jobposting/ApplicationStatus';
+// import ApplicationStatus from './components/jobposting/ApplicationStatus';
 import ViewInterviewSchedule from './components/jobposting/ViewInterviewSchedule';
 // import RecruitmentCandidate from './components/jobposting/RecruitmentCandidate';
 
@@ -63,7 +63,7 @@ function App() {
               {/* <Route path="/recruitment_candidate" element={<RecruitmentCandidate />} /> */}
               <Route path="/job_postings_view" element={<JobPostingsView />} />
               <Route path="/apply/:jobId" element={<ApplyJob />} />
-              <Route path="/application_status/:jobId" element={<ApplicationStatus />} />
+              {/* <Route path="/application_status/:jobId" element={<ApplicationStatus />} /> */}
               <Route path="/interview_schedule" element={<ViewInterviewSchedule />} />
             </Routes>
 
