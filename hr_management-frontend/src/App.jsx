@@ -15,7 +15,7 @@ import EmployeeLogin from './components/login/EmployeeLogin';
 import Dashboard_Employee from './components/dashboard/Dashboard_Employee';
 import EmployeeSideFull from './components/Employee/EmployeeSideFull';
 import EmployeeLeaveSubmit from './components/Employee/EmployeeLeaveSubmit';
-import Recruitment from './components/jobposting/Recruitment';
+// import Recruitment from './components/jobposting/Recruitment';
 import JobPostings from './components/jobposting/JobPostings';
 import CandidateApplication from './components/jobposting/CandidateApplications';
 import InterviewScheduling from './components/jobposting/InterviewScheduling';
@@ -25,7 +25,7 @@ import JobPostingsView from './components/jobposting/JobPostingsView';
 import ApplyJob from './components/jobposting/ApplyJob';
 import ApplicationStatus from './components/jobposting/ApplicationStatus';
 import ViewInterviewSchedule from './components/jobposting/ViewInterviewSchedule';
-import RecruitmentCandidate from './components/jobposting/RecruitmentCandidate';
+// import RecruitmentCandidate from './components/jobposting/RecruitmentCandidate';
 
 
 
@@ -50,7 +50,7 @@ function App() {
               <Route path='/employee_leaverequest/:id' element={<LeaveRequests />}></Route>
               <Route path='/employee_attendance/:id' element={<AttendanceRecords />}></Route>
               <Route path='/employeelist' element={<EmployeeDetails />}></Route>
-              <Route path='/recruitment' element={<Recruitment />}></Route>
+              {/* <Route path='/recruitment' element={<Recruitment />}></Route> */}
               <Route path="/job_postings" element={<JobPostings />} />
               <Route path="/candidate_applications/:id" element={<CandidateApplication />} />
               <Route path="/interview_scheduling" element={<InterviewScheduling />} />
@@ -60,6 +60,7 @@ function App() {
               <Route path='/employee_side_full/:id' element={<EmployeeSideFull />}></Route>
               <Route path='/employee_leave_submit/:id' element={<EmployeeLeaveSubmit />}></Route>
               {/* Candidate */}
+              {/* <Route path="/recruitment_candidate" element={<RecruitmentCandidate />} /> */}
               <Route path="/job_postings_view" element={<JobPostingsView />} />
               <Route path="/apply/:jobId" element={<ApplyJob />} />
               <Route path="/application_status/:jobId" element={<ApplicationStatus />} />
