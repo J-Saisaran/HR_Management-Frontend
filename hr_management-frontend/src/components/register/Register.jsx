@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, TextField, Typography, Container } from '@mui/material';
+import { Button, TextField, Typography, Container, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
@@ -46,7 +46,7 @@ function Register() {
 
     return (
         <Container maxWidth="sm">
-            <Dashboard_1/>
+            <Dashboard_1 />
             <br />
             <br />
             <br />
@@ -91,18 +91,28 @@ function Register() {
                     error={formik.touched.password && Boolean(formik.errors.password)}
                     helperText={formik.touched.password && formik.errors.password}
                 />
-                <TextField
-                    label="Role"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    name="role"
-                    value={formik.values.role}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.role && Boolean(formik.errors.role)}
-                    helperText={formik.touched.role && formik.errors.role}
-                />
+                <FormControl variant="outlined" fullWidth margin="normal">
+                    <InputLabel id="role-label">Role</InputLabel>
+                    <Select
+                        labelId="role-label"
+                        id="role"
+                        name="role"
+                        value={formik.values.role}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.role && Boolean(formik.errors.role)}
+                        label="Role"
+                    >
+                        <MenuItem value="">
+                            <em>None</em>
+                        </MenuItem>
+                        <MenuItem value="admin">Admin</MenuItem>
+                       <MenuItem value="hr">admin</MenuItem>
+                    </Select>
+                    {formik.touched.role && formik.errors.role ? (
+                        <Typography color="error" variant="caption">{formik.errors.role}</Typography>
+                    ) : null}
+                </FormControl>
                 <Button
                     type="submit"
                     variant="contained"
@@ -118,4 +128,3 @@ function Register() {
 }
 
 export default Register;
-

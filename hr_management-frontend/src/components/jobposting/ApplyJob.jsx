@@ -1,16 +1,16 @@
 import React from 'react';
-import { Typography, Container, Button, TextField, Box } from '@mui/material';
+import { Typography, Container, Button, TextField } from '@mui/material';
 import { Formik, Field, Form } from 'formik';
 import http from '../../../utlis/http'; // Correct path to Axios instance
 import { useParams } from 'react-router-dom';
-import Dashboard_2 from '../dashboard/Dashboard_2'
+import Dashboard_2 from '../dashboard/Dashboard_2';
 
 const ApplyJob = () => {
     const { jobId } = useParams(); // Get the job ID from URL parameters
 
     return (
         <Container>
-             <Dashboard_2/> <br /><br /><br />
+            <Dashboard_2 /> <br /><br /><br />
             <Typography variant="h4" component="h1" gutterBottom>
                 Apply for Job
             </Typography>
@@ -18,6 +18,7 @@ const ApplyJob = () => {
                 initialValues={{
                     candidateName: '',
                     candidateEmail: '',
+                    phoneNumber: '', 
                     resume: '',
                     coverLetter: ''
                 }}
@@ -57,6 +58,19 @@ const ApplyJob = () => {
                             onChange={handleChange}
                             onBlur={handleBlur}
                             value={values.candidateEmail}
+                        />
+                        <Field
+                            as={TextField}
+                            label="Phone Number"
+                            name="phoneNumber"
+                            type="tel"
+                            fullWidth
+                            required
+                            margin="normal"
+                            variant="outlined"
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            value={values.phoneNumber}
                         />
                         <Field
                             as={TextField}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Container, Button, Modal, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, MenuItem } from '@mui/material';
+import { Typography, Container, Button, Modal, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField } from '@mui/material';
 import http from '../../../utlis/http'; // Axios instance
 import Dashboard from '../dashboard/Dashboard';
 import { useLocation, useParams } from 'react-router-dom';
@@ -11,7 +11,6 @@ const CandidateApplications = () => {
     const [open, setOpen] = useState(false);
     const [interviewOpen, setInterviewOpen] = useState(false);
     const [selectedApplication, setSelectedApplication] = useState(null);
-    const [status, setStatus] = useState('');
     const [interviewDetails, setInterviewDetails] = useState({ date: '', time: '', location: '' });
     const { id } = useParams();
 
@@ -30,18 +29,6 @@ const CandidateApplications = () => {
     const handleApplicationClick = (application) => {
         setSelectedApplication(application);
         setOpen(true);
-    };
-
-    const handleStatusChange = (newStatus) => {
-        if (selectedApplication) {
-            http.put(`/candidates/${selectedApplication._id}/status`, { status: newStatus })
-                .then(res => {
-                    setApplications(applications.map(app => app._id === selectedApplication._id ? { ...app, status: newStatus } : app));
-                    setSelectedApplication(null);
-                    handleClose();
-                })
-                .catch(err => console.error(err));
-        }
     };
 
     const handleInterviewSubmit = () => {
@@ -72,10 +59,7 @@ const CandidateApplications = () => {
                             <TableCell>Candidate Email</TableCell>
                             <TableCell>Resume</TableCell>
                             <TableCell>Application Date</TableCell>
-
                             <TableCell>Details</TableCell>
-
-
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -86,7 +70,6 @@ const CandidateApplications = () => {
                                 <TableCell>{application.candidateEmail}</TableCell>
                                 <TableCell><a href={application.resume} target="_blank" rel="noopener noreferrer">View Resume</a></TableCell>
                                 <TableCell>{new Date(application.applicationDate).toLocaleDateString()}</TableCell>
-
                                 <TableCell>
                                     <Button
                                         variant="contained"
@@ -134,6 +117,7 @@ const CandidateApplications = () => {
                             <Typography variant="h6">Job Posting: {selectedApplication.jobPosting?.title || 'Not Available'}</Typography>
                             <Typography variant="h6">Candidate Name: {selectedApplication.candidateName}</Typography>
                             <Typography variant="h6">Candidate Email: {selectedApplication.candidateEmail}</Typography>
+                            <Typography variant="h6">Phone Number: {selectedApplication.phoneNumber}</Typography> {/* Phone number displayed here */}
                             <Typography variant="h6">Resume: <a href={selectedApplication.resume} target="_blank" rel="noopener noreferrer">View Resume</a></Typography>
                             <Typography variant="h6">Cover Letter: {selectedApplication.coverLetter}</Typography>
                             <Typography variant="h6">Application Date: {new Date(selectedApplication.applicationDate).toLocaleDateString()}</Typography>
