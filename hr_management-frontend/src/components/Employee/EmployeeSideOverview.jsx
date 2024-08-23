@@ -39,7 +39,9 @@ const EmployeeOverview = () => {
             });
     }, [id]);
 
-    if (!employee) return <div><Loading/></div>;
+    if (!employee) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <Loading />
+</div>;
 
     return (
         <Container maxWidth="md">

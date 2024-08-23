@@ -21,12 +21,8 @@ import http from '../../../utlis/http';
 import Container from '@mui/material/Container';
 import PersonRemoveRoundedIcon from '@mui/icons-material/PersonRemoveRounded';
 import EditNoteSharpIcon from '@mui/icons-material/EditNoteSharp';
-import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp'
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import { useNavigate } from 'react-router-dom';
-
-
-
-
 
 function EmployeeTable() {
 
@@ -36,17 +32,19 @@ function EmployeeTable() {
     const [open, setOpen] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
 
-
     // Handle the delete operation
     const handleDelete = async (id) => {
-        try {
-            // Perform the delete request
-            await http.delete(`/employees/${id}`);
+        const confirmed = window.confirm("Are you sure you want to delete this employee?");
+        if (confirmed) {
+            try {
+                // Perform the delete request
+                await http.delete(`/employees/${id}`);
 
-            // Update the state to remove the deleted employee
-            setEmployees(employees.filter((employee) => employee._id !== id));
-        } catch (error) {
-            console.error("Failed to delete employee:", error);
+                // Update the state to remove the deleted employee
+                setEmployees(employees.filter((employee) => employee._id !== id));
+            } catch (error) {
+                console.error("Failed to delete employee:", error);
+            }
         }
     };
 
@@ -55,7 +53,6 @@ function EmployeeTable() {
         navigate(`/employee_full/${id}`);
         setOpen(true);
     };
-
 
     useEffect(() => {
         http.get('/employees')
@@ -67,7 +64,6 @@ function EmployeeTable() {
             });
     }, []);
 
-
     // Handle the edit button click
     const handleUpdate = async (id) => {
         try {
@@ -76,16 +72,15 @@ function EmployeeTable() {
 
             // Open the update form/modal
             setOpen(true);
-        } 
-        catch (error) {
+        } catch (error) {
             console.error('Error fetching employee:', error);
         }
     };
 
-    const handlePerformance = async (id) =>{
-    navigate(`/employee_performance/${id}`);
+    const handlePerformance = async (id) => {
+        navigate(`/employee_performance/${id}`);
         setOpen(true);
-    }
+    };
 
     // Handle form submission and update the employee
     const formik = useFormik({
@@ -178,7 +173,7 @@ function EmployeeTable() {
                 emergencyContactPhone: selectedEmployee.emergencyContact?.phone || '',
             });
         }
-    }, [selectedEmployee])
+    }, [selectedEmployee]);
 
     return (
         <Container maxWidth="xl" className="employee-management-container">
@@ -186,17 +181,15 @@ function EmployeeTable() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>First Name</TableCell>
-                            <TableCell>Last Name</TableCell>
-                            <TableCell>Email</TableCell>
-                            <TableCell>Phone</TableCell>
-                            <TableCell>Position</TableCell>
-                            <TableCell>Department</TableCell>
-                            <TableCell>Edit</TableCell>
-                            <TableCell>Delete</TableCell>
-                            <TableCell>More</TableCell>
-
-
+                            <TableCell style={{ borderBottom: '2px solid #000', fontWeight: 'bold' }}>First Name</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000', fontWeight: 'bold'  }}>Last Name</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000', fontWeight: 'bold'  }}>Email</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000', fontWeight: 'bold'  }}>Phone</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Position</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000', fontWeight: 'bold'  }}>Department</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Edit</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Delete</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>More</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -218,7 +211,6 @@ function EmployeeTable() {
                                     </IconButton>
                                 </TableCell>
                                 <TableCell>
-                                
                                     <IconButton
                                         variant="contained"
                                         color="secondary"
@@ -226,8 +218,6 @@ function EmployeeTable() {
                                     >
                                         <PersonRemoveRoundedIcon />
                                     </IconButton>
-                                    
-
                                 </TableCell>
                                 <TableCell>
                                     <IconButton
@@ -235,10 +225,9 @@ function EmployeeTable() {
                                         color="secondary"
                                         onClick={() => handleMore(employee._id)}
                                     >
-                                        <ArrowForwardIosSharpIcon/>
+                                        <ArrowForwardIosSharpIcon />
                                     </IconButton>
                                 </TableCell>
-                                
                             </TableRow>
                         ))}
                     </TableBody>
@@ -247,7 +236,7 @@ function EmployeeTable() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>Edit Employee</DialogTitle>
                 <form onSubmit={formik.handleSubmit}>
-                    <DialogContent>
+                <DialogContent>
                         <TextField
                             fullWidth
                             label="First Name"
@@ -452,11 +441,7 @@ function EmployeeTable() {
                 </form>
             </Dialog>
         </Container>
-
-
-
-
-    )
+    );
 }
 
-export default EmployeeTable
+export default EmployeeTable;

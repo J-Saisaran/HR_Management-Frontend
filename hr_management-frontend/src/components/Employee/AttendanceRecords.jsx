@@ -30,7 +30,7 @@ import PersonRemoveRoundedIcon from '@mui/icons-material/PersonRemoveRounded';
 import Dashboard from '../dashboard/Dashboard';
 
 const AttendanceRecords = () => {
-    const { id } = useParams(); // Employee ID from the route parameters
+    const { id } = useParams(); 
     const [attendance, setAttendance] = useState([]);
     const [open, setOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
@@ -63,13 +63,17 @@ const AttendanceRecords = () => {
     };
 
     const handleDelete = (recordId) => {
-        http.delete(`/attendance/${recordId}`)
-            .then(() => {
-                setAttendance(attendance.filter((record) => record._id !== recordId));
-            })
-            .catch((err) => {
-                console.error(err);
-            });
+        // Show confirmation dialog
+        const confirmDelete = window.confirm("Are you sure you want to delete this record?");
+        if (confirmDelete) {
+            http.delete(`/attendance/${recordId}`)
+                .then(() => {
+                    setAttendance(attendance.filter((record) => record._id !== recordId));
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+        }
     };
 
     const validationSchema = Yup.object().shape({
