@@ -22,11 +22,12 @@ import {
     DialogTitle,
     IconButton,
     TextField,
+    MenuItem,
 } from '@mui/material';
 import AddCircleSharpIcon from '@mui/icons-material/AddCircleSharp';
 import EditIcon from '@mui/icons-material/Edit';
 import PersonRemoveRoundedIcon from '@mui/icons-material/PersonRemoveRounded';
-import Dashboard from '../dashboard/Dashboard'
+import Dashboard from '../dashboard/Dashboard';
 
 const AttendanceRecords = () => {
     const { id } = useParams(); // Employee ID from the route parameters
@@ -35,7 +36,6 @@ const AttendanceRecords = () => {
     const [editMode, setEditMode] = useState(false);
     const [currentRecordId, setCurrentRecordId] = useState(null);
 
-    
     useEffect(() => {
         http.get(`/attendance/${id}/`)
             .then(res => {
@@ -79,7 +79,7 @@ const AttendanceRecords = () => {
     });
 
     const addAttendanceRecord = (values, { setSubmitting, resetForm }) => {
-        http.post(`/attendance/${id}/`, {...values, employee: `${id}`})  
+        http.post(`/attendance/${id}/`, { ...values, employee: `${id}` })
             .then((res) => {
                 setAttendance([...attendance, res.data]);
                 resetForm();
@@ -120,7 +120,7 @@ const AttendanceRecords = () => {
 
     return (
         <Container maxWidth="md">
-            <Dashboard/>
+            <Dashboard />
             <Card>
                 <CardContent>
                     <Typography variant="h5" component="div" gutterBottom>
@@ -164,13 +164,18 @@ const AttendanceRecords = () => {
                                             as={TextField}
                                             name="status"
                                             label="Status"
-                                            type="text"
-                                            margin="normal"
+                                            select
                                             fullWidth
+                                            margin="normal"
                                             variant="outlined"
                                             error={touched.status && Boolean(errors.status)}
                                             helperText={touched.status && errors.status}
-                                        />
+                                        >
+                                            <MenuItem value="Present">Present</MenuItem>
+                                            <MenuItem value="Absent">Absent</MenuItem>
+                                            <MenuItem value="On Leave">On Leave</MenuItem>
+                                            <MenuItem value="Late">Late</MenuItem>
+                                        </Field>
                                         <Field
                                             as={TextField}
                                             name="notes"
