@@ -107,7 +107,7 @@ function Register() {
                             <em>None</em>
                         </MenuItem>
                         <MenuItem value="admin">Admin</MenuItem>
-                       <MenuItem value="hr">admin</MenuItem>
+                
                     </Select>
                     {formik.touched.role && formik.errors.role ? (
                         <Typography color="error" variant="caption">{formik.errors.role}</Typography>
