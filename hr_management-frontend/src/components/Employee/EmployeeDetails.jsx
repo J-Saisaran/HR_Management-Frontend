@@ -92,7 +92,7 @@ const [employees, setEmployees] = useState([]);
                 setEmployees([...employees, res.data]);
                 setOpen(false);
                 formik.resetForm(true);
-                
+                window.location.reload();
                 navigate('/employeelist');
 
             })
