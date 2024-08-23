@@ -12,6 +12,7 @@ import {
 import IconButton from '@mui/material/IconButton';
 import ArrowForwardIosSharpIcon from  '@mui/icons-material/ArrowForwardIosSharp';
 import { useNavigate } from 'react-router-dom';
+import Loading from '../loading/Loading'
 
 
 const EmployeeOverview = () => {
@@ -38,7 +39,7 @@ const EmployeeOverview = () => {
             });
     }, [id]);
 
-    if (!employee) return <div>Loading...</div>;
+    if (!employee) return <div><Loading/></div>;
 
     return (
         <Container maxWidth="md">
