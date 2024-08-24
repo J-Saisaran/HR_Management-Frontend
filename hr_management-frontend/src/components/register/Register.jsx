@@ -32,7 +32,7 @@ function Register() {
         onSubmit: async (values, { setSubmitting }) => {
             try {
                 await register(values.name, values.email, values.password, values.role);
-                navigate('/hr_login');  // Ensure this path is correct
+                navigate('/hr_login');  
             } catch (err) {
                 console.log('Registration error:', err);
             }
