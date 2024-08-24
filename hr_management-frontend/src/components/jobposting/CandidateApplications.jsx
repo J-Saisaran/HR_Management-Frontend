@@ -3,6 +3,7 @@ import { Typography, Container, Button, Modal, Box, Table, TableBody, TableCell,
 import http from '../../../utlis/http'; // Axios instance
 import Dashboard from '../dashboard/Dashboard';
 import { useLocation, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const CandidateApplications = () => {
     const location = useLocation();
@@ -13,6 +14,7 @@ const CandidateApplications = () => {
     const [selectedApplication, setSelectedApplication] = useState(null);
     const [interviewDetails, setInterviewDetails] = useState({ date: '', time: '', location: '' });
     const { id } = useParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
         http.get(`/candidates/${id}`)
@@ -32,15 +34,8 @@ const CandidateApplications = () => {
     };
 
     const handleInterviewSubmit = () => {
-        if (selectedApplication) {
-            http.put(`/candidates/${selectedApplication._id}/schedule-interview`, interviewDetails)
-                .then(res => {
-                    setSelectedApplication(null);
-                    setInterviewDetails({ date: '', time: '', location: '' });
-                    handleInterviewClose();
-                })
-                .catch(err => console.error(err));
-        }
+        navigate('/interview_scheduling');
+        
     };
 
     return (
@@ -60,6 +55,7 @@ const CandidateApplications = () => {
                             <TableCell>Resume</TableCell>
                             <TableCell>Application Date</TableCell>
                             <TableCell>Details</TableCell>
+                            <TableCell>Interview Schedule</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -77,6 +73,15 @@ const CandidateApplications = () => {
                                         onClick={() => handleApplicationClick(application)}
                                     >
                                         View Details
+                                    </Button>
+                                </TableCell>
+                                <TableCell>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => handleInterviewSubmit()}
+                                    >
+                                       Interview Schedule
                                     </Button>
                                 </TableCell>
                             </TableRow>

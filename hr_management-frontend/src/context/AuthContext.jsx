@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
 
+
   useEffect(() => {
     if (token) {
       setAuthToken(token);
@@ -17,22 +18,21 @@ export const AuthProvider = ({ children }) => {
           setUser(res.data);
         })
         .catch((err) => {
-          console.error("Failed to fetch user data:", err);
           setToken(null);
           localStorage.removeItem("token");
+          console.log(err);
           setAuthToken(null);
         });
     }
   }, [token]);
 
-  const adminregister = async (name, email, password, role) => {
+  const register = async (name, email, password, role) => {
     try {
       const res = await http.post("/users", { name, email, password, role });
-      const newToken = res.data;
+      const newToken = res.data;      
       setToken(newToken);
       localStorage.setItem("token", newToken);
       setAuthToken(newToken);
-
       const userResponse = await http.get("/users");
       setUser(userResponse.data);
     } catch (err) {
@@ -57,13 +57,13 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setToken(null);
-    localStorage.removeItem("token");
+    localStorage.removeItem(token);
     setUser(null);
     setAuthToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, adminregister }}>
+    <AuthContext.Provider value={{ user, token, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );

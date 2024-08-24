@@ -7,7 +7,7 @@ import AuthContext from '../../context/AuthContext';
 import Dashboard_1 from '../dashboard/Dashboard_1';
 
 function Register() {
-    const { adminregister } = React.useContext(AuthContext);
+    const { register } = React.useContext(AuthContext);
     const navigate = useNavigate();
 
     const formik = useFormik({
@@ -31,7 +31,7 @@ function Register() {
         }),
         onSubmit: async (values, { setSubmitting }) => {
             try {
-                await adminregister(values.name, values.email, values.password, values.role);
+                await register(values.name, values.email, values.password, values.role);
                 navigate('/hr_login');  // Ensure this path is correct
             } catch (err) {
                 console.log('Registration error:', err);

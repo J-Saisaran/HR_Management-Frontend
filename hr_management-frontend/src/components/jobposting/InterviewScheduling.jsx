@@ -54,9 +54,9 @@ const InterviewScheduling = () => {
                                 <TableCell>{interview.mode}</TableCell>
                                 <TableCell>{interview.notes}</TableCell>
                                 <TableCell>
-                                    <Button 
-                                        variant="contained" 
-                                        color="primary" 
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
                                         onClick={() => handleInterviewClick(interview)}
                                     >
                                         View Details
@@ -69,15 +69,14 @@ const InterviewScheduling = () => {
             </TableContainer>
 
             <Modal open={open} onClose={handleClose}>
-                <Container style={{ 
-                    padding: '20px', 
-                    maxWidth: '600px', 
-                    maxHeight: '80vh', 
+                <Container style={{
+                    padding: '20px',
+                    maxHeight: '80vh',
                     overflowY: 'auto',
-                    backgroundColor: '#fff', // Ensures the modal background is white
-                    borderRadius: '8px', // Optional: adds rounded corners
-                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Optional: adds shadow for better visibility
-                    position: 'relative', // Allows proper positioning of inner elements
+                    backgroundColor: '#fff',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
                     marginTop: '50px', // Keeps modal centered
                     marginBottom: '50px', // Keeps modal centered
                 }}>
@@ -176,7 +175,7 @@ const InterviewScheduling = () => {
                     <Typography variant="h4" component="h1" gutterBottom>
                         Interview Details
                     </Typography>
-                    
+
                     <Typography variant="body1">Interview Date: {new Date(selectedInterview.interviewDate).toLocaleDateString()}</Typography>
                     <Typography variant="body1">Interviewer: {selectedInterview.interviewer}</Typography>
                     <Typography variant="body1">Mode: {selectedInterview.mode}</Typography>
@@ -184,7 +183,7 @@ const InterviewScheduling = () => {
                 </Container>
             )}
 
-        
+
         </Container>
     );
 };

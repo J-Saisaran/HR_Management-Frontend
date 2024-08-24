@@ -71,14 +71,12 @@ const Home = () => {
                         <CardContent>
                             <Typography variant="h5" component="h2" gutterBottom>
                                Candidate Page 
-                            </Typography>
-                            <Typography variant="body2" component="p">
+                            </Typography>                           
                                 <ul>
                                 <li>Candidate can View the Job posted by HR </li>
                                 <li>Candidate can Apply for the Job </li>
                                 <li>Candidate can View the Schedule of Interview </li>
-                                </ul>
-                            </Typography>
+                                </ul>                            
                             <Button
                                 variant="contained"
                                 color="primary"
