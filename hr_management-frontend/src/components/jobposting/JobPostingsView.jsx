@@ -31,12 +31,12 @@ const JobPostingsView = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Job Title</TableCell>
-                            <TableCell>Description</TableCell>
-                            <TableCell>Location</TableCell>
-                            <TableCell>Salary</TableCell>
-                            <TableCell>Apply</TableCell>
-                            <TableCell>Schedule</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Job Title</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Description</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Location</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Salary</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Apply</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Schedule</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

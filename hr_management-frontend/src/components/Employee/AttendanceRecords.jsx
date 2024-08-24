@@ -208,11 +208,11 @@ const AttendanceRecords = () => {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Date</TableCell>
-                                    <TableCell>Status</TableCell>
-                                    <TableCell>Notes</TableCell>
-                                    <TableCell>Edit</TableCell>
-                                    <TableCell>Remove</TableCell>
+                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Date</TableCell>
+                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Status</TableCell>
+                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Notes</TableCell>
+                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Edit</TableCell>
+                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Remove</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>

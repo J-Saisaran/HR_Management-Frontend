@@ -55,16 +55,16 @@ const EmployeeOverview = () => {
                     </Typography>
                     <Grid container spacing={2}>
                         <Grid item xs={6}>
-                            <Typography variant="body2">Email: {employee.email}</Typography>
-                            <Typography variant="body2">Phone: {employee.phone}</Typography>
-                            <Typography variant="body2">Start Date: {employee.startDate}</Typography>
-                            <Typography variant="body2">Date of Birth: {employee.dateOfBirth}</Typography>
+                            <Typography variant="body2" ><span style={{fontWeight: 'bold' }}>Email:</span> {employee.email}</Typography>
+                            <Typography variant="body2"><span style={{fontWeight: 'bold' }}>Phone:</span> {employee.phone}</Typography>
+                            <Typography variant="body2"><span style={{fontWeight: 'bold' }}>Start Date:</span> {employee.startDate}</Typography>
+                            <Typography variant="body2"><span style={{fontWeight: 'bold' }}>Date of Birth:</span> {employee.dateOfBirth}</Typography>
                         </Grid>
                         <Grid item xs={6}>
-                            <Typography variant="body2">Street: {employee.address.street}</Typography>
-                            <Typography variant="body2">City: {employee.address.city} </Typography>
-                            <Typography variant="body2">State: {employee.address.state} </Typography>
-                            <Typography variant="body2">Postal Code: {employee.address.postalCode} </Typography>
+                            <Typography variant="body2"><span style={{fontWeight: 'bold' }}>Street:</span> {employee.address.street}</Typography>
+                            <Typography variant="body2"><span style={{fontWeight: 'bold' }}>City:</span> {employee.address.city} </Typography>
+                            <Typography variant="body2"><span style={{fontWeight: 'bold' }}>State:</span> {employee.address.state} </Typography>
+                            <Typography variant="body2"><span style={{fontWeight: 'bold' }}>Postal Code:</span> {employee.address.postalCode} </Typography>
                             
                         </Grid>
                         

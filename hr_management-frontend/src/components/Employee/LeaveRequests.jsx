@@ -60,11 +60,11 @@ const LeaveRequests = () => {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Start Date</TableCell>
-                                    <TableCell>End Date</TableCell>
-                                    <TableCell>Status</TableCell>
-                                    <TableCell>Type</TableCell>
-                                    <TableCell>Actions</TableCell>
+                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Start Date</TableCell>
+                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>End Date</TableCell>
+                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Status</TableCell>
+                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Type</TableCell>
+                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>

@@ -39,11 +39,11 @@ const InterviewScheduling = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Interview Date</TableCell>
-                            <TableCell>Interviewer</TableCell>
-                            <TableCell>Mode</TableCell>
-                            <TableCell>Notes</TableCell>
-                            <TableCell>Actions</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Interview Date</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Interviewer</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Mode</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Notes</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -176,10 +176,10 @@ const InterviewScheduling = () => {
                         Interview Details
                     </Typography>
 
-                    <Typography variant="body1">Interview Date: {new Date(selectedInterview.interviewDate).toLocaleDateString()}</Typography>
-                    <Typography variant="body1">Interviewer: {selectedInterview.interviewer}</Typography>
-                    <Typography variant="body1">Mode: {selectedInterview.mode}</Typography>
-                    <Typography variant="body1">Notes: {selectedInterview.notes}</Typography>
+                    <Typography variant="body1"><span style={{fontWeight: 'bold' }}>Interview Date:</span> {new Date(selectedInterview.interviewDate).toLocaleDateString()}</Typography>
+                    <Typography variant="body1"><span style={{fontWeight: 'bold' }}>Interviewer: </span>{selectedInterview.interviewer}</Typography>
+                    <Typography variant="body1"><span style={{fontWeight: 'bold' }}>Mode:</span> {selectedInterview.mode}</Typography>
+                    <Typography variant="body1"><span style={{fontWeight: 'bold' }}>Notes: </span>{selectedInterview.notes}</Typography>
                 </Container>
             )}
 

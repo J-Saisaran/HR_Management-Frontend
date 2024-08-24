@@ -49,13 +49,13 @@ const CandidateApplications = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Job Posting</TableCell>
-                            <TableCell>Candidate Name</TableCell>
-                            <TableCell>Candidate Email</TableCell>
-                            <TableCell>Resume</TableCell>
-                            <TableCell>Application Date</TableCell>
-                            <TableCell>Details</TableCell>
-                            <TableCell>Interview Schedule</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Job Posting</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Candidate Name</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Candidate Email</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Resume</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Application Date</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Details</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Interview Schedule</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -114,18 +114,19 @@ const CandidateApplications = () => {
                         variant="h6"
                         component="h2"
                         gutterBottom
+                        style={{fontWeight: 'bold' }}
                     >
                         Application Details
                     </Typography>
                     {selectedApplication && (
                         <Box>
-                            <Typography variant="h6">Job Posting: {selectedApplication.jobPosting?.title || 'Not Available'}</Typography>
-                            <Typography variant="h6">Candidate Name: {selectedApplication.candidateName}</Typography>
-                            <Typography variant="h6">Candidate Email: {selectedApplication.candidateEmail}</Typography>
-                            <Typography variant="h6">Phone Number: {selectedApplication.phoneNumber}</Typography> {/* Phone number displayed here */}
-                            <Typography variant="h6">Resume: <a href={selectedApplication.resume} target="_blank" rel="noopener noreferrer">View Resume</a></Typography>
-                            <Typography variant="h6">Cover Letter: {selectedApplication.coverLetter}</Typography>
-                            <Typography variant="h6">Application Date: {new Date(selectedApplication.applicationDate).toLocaleDateString()}</Typography>
+                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Job Posting:</span> {selectedApplication.jobPosting?.title || 'Not Available'}</Typography>
+                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Candidate Name:</span> {selectedApplication.candidateName}</Typography>
+                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Email:</span>Candidate  {selectedApplication.candidateEmail}</Typography>
+                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Phone Number:</span> {selectedApplication.phoneNumber}</Typography> {/* Phone number displayed here */}
+                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Resume:</span> <a href={selectedApplication.resume} target="_blank" rel="noopener noreferrer">View Resume</a></Typography>
+                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Cover Letter:</span> {selectedApplication.coverLetter}</Typography>
+                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Application Date:</span> {new Date(selectedApplication.applicationDate).toLocaleDateString()}</Typography>
                         </Box>
                     )}
                 </Container>

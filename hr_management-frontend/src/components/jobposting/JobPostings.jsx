@@ -43,13 +43,13 @@ const JobPostings = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Title</TableCell>
-                            <TableCell>Description</TableCell>
-                            <TableCell>Location</TableCell>
-                            <TableCell>Salary</TableCell>
-                            <TableCell>Closing Date</TableCell>
-                            <TableCell>Actions</TableCell>
-                            <TableCell>Applications</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Title</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Description</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Location</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Salary</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Closing Date</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Actions</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Applications</TableCell>
 
                         </TableRow>
                     </TableHead>
@@ -239,11 +239,11 @@ const JobPostings = () => {
                     </Typography>
                     <Typography variant="h5">{selectedJob.title}</Typography>
                     <Typography variant="body1">{selectedJob.description}</Typography>
-                    <Typography variant="body2">Requirements: {selectedJob.requirements.join(', ')}</Typography>
-                    <Typography variant="body2">Location: {selectedJob.location}</Typography>
-                    <Typography variant="body2">Salary: ${selectedJob.salary}</Typography>
-                    <Typography variant="body2">Posted Date: {new Date(selectedJob.postedDate).toLocaleDateString()}</Typography>
-                    <Typography variant="body2">Closing Date: {new Date(selectedJob.closingDate).toLocaleDateString()}</Typography>
+                    <Typography variant="body2"><span style={{fontWeight: 'bold' }}>Requirements:</span> {selectedJob.requirements.join(', ')}</Typography>
+                    <Typography variant="body2"><span style={{fontWeight: 'bold' }}>Location:</span>{selectedJob.location}</Typography>
+                    <Typography variant="body2"><span style={{fontWeight: 'bold' }}>Salary:</span> ${selectedJob.salary}</Typography>
+                    <Typography variant="body2"><span style={{fontWeight: 'bold' }}>Posted Date:</span> {new Date(selectedJob.postedDate).toLocaleDateString()}</Typography>
+                    <Typography variant="body2"><span style={{fontWeight: 'bold' }}>Closing Date:</span> {new Date(selectedJob.closingDate).toLocaleDateString()}</Typography>
                 </Container>
             )}
         </Container>

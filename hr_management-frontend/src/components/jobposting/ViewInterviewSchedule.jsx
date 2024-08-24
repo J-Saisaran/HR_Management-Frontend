@@ -24,10 +24,10 @@ const ViewInterviewSchedule = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Interview Date</TableCell>
-                            <TableCell>Interviewer</TableCell>
-                            <TableCell>Mode</TableCell>
-                            <TableCell>Notes</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Interview Date</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Interviewer</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Mode</TableCell>
+                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Notes</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
