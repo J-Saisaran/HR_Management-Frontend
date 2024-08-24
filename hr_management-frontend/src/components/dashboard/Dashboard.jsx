@@ -92,6 +92,10 @@ function Dashboard() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
+   const handlehrbutton = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -108,7 +112,7 @@ function Dashboard() {
             <MenuIcon />
           </IconButton>
           
-            <IconButton color="inherit" onClick={() => navigate('/')}>
+            <IconButton color="inherit" onClick={handlehrbutton}>
             <Typography variant="h6" style={{ flexGrow: 1 }}>
               HR Management
               </Typography>
