@@ -263,7 +263,7 @@ function Dashboard_Employee() {
   navigate('/employee_login');
 
   // Optionally reload the page to ensure that the cache is fully cleared
-  window.location.reload();
+ 
   };
 
   const handleDrawerOpen = () => {
