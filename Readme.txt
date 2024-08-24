@@ -35,6 +35,28 @@ Ensure you have the following installed:
 
 ### Installation
 
-1. Clone the repository:
-   git clone https://github.com/J-Saisaran/HR_Management-Frontend.git
-   cd HR_Management-Frontend
+For employee login the registration is done when the employee is added to the employee list.
+Use that credential in Employee login.
+for every enum mentioned in the backend dropdown the value is mentioned in the frontend dropdown.
+ 
+ Hr Side action:
+ * Hr can register
+ * Hr can login
+ * Hr can add employee , delete employee, edit employee.
+ * Hr can enter attendance for a employee
+ * Hr can Approve leave request.
+ * Hr can can set the performance made by the employee in a particular project
+ * Hr can post a job and the candidate can apply for the job
+ * Hr can view the candidate list and candidate details and make contact throught the information given by the candidate
+ * Hr can schedule the interview for the candidates
+
+ Employee side action:
+ * Employee can login with the credentials given by the hr while addig the employee in the employee list
+ * Employee can apply for the leave
+ * Employee can view the status of the leave
+
+ Candidate side action:
+ * Candidate can apply for the job
+ * Candidate can view the interview schedule
+ * While updating the details the resume should be a pdf link
+ 
