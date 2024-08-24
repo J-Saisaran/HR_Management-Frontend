@@ -1,47 +1,35 @@
 import React, { useState } from 'react';
 import { Button, TextField, Typography, Container, AppBar, Box, Toolbar, CssBaseline } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import http from '../../../utlis/http';
 import IconButton from '@mui/material/IconButton';
 
 function EmployeeLogin() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const formik = useFormik({
-        initialValues: {
-            email: '',
-            password: '',
-        },
-        validationSchema: Yup.object({
-            email: Yup.string()
-                .email('Invalid email address')
-                .required('Email is required'),
-            password: Yup.string()
-                .min(6, 'Password must be at least 6 characters')
-                .required('Password is required'),
-        }),
-        onSubmit: async (values, { setSubmitting }) => {
-            try {
-                // Send login request
-                const res = await http.post('/employees/login', { email: values.email, password: values.password });
-
-                if (res.status === 200) {
-                    const id = res.data.id;
-                    navigate(`/employee_side_full/${id}`);
-                }
-            } catch (err) {
-                if (err.response && err.response.status === 401) {
-                    setError('Invalid credentials. Please try again.');
-                } else {
-                    setError('Login failed. Please try again later.');
-                }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+    
+        try {
+            // Send login request
+            const res = await http.post('/employees/login', { email, password });
+    
+            if (res.status === 200) {
+                // Assuming the response contains the employee ID
+                const id = res.data.id;
+                navigate(`/employee_side_full/${id}`);
             }
-            setSubmitting(false);
-        },
-    });
+        } catch (err) {
+            if (err.response && err.response.status === 401) {
+                setError(' Login failed. Please try again later.');
+            } else {
+                setError('Invalid credentials');
+            }
+        }
+    };
 
     return (
         <Container maxWidth="sm">
@@ -65,18 +53,14 @@ function EmployeeLogin() {
                     Employee Login
                 </Typography>
                 {error && <Typography color="error">{error}</Typography>}
-                <form onSubmit={formik.handleSubmit}>
+                <form onSubmit={handleSubmit}>
                     <TextField
                         label="Email"
                         variant="outlined"
                         fullWidth
                         margin="normal"
-                        name="email"
-                        value={formik.values.email}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        error={formik.touched.email && Boolean(formik.errors.email)}
-                        helperText={formik.touched.email && formik.errors.email}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                     />
                     <TextField
                         label="Password"
@@ -84,20 +68,10 @@ function EmployeeLogin() {
                         fullWidth
                         margin="normal"
                         type="password"
-                        name="password"
-                        value={formik.values.password}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        error={formik.touched.password && Boolean(formik.errors.password)}
-                        helperText={formik.touched.password && formik.errors.password}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                     />
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        fullWidth
-                        disabled={formik.isSubmitting}
-                    >
+                    <Button type="submit" variant="contained" color="primary" fullWidth>
                         Login
                     </Button>
                 </form>

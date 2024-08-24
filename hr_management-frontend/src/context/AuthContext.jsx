@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }) => {
     const handlePopState = () => {
       if (!localStorage.getItem("token")) {
         logout();
-        window.location.href = "/hr_login"; // Redirect to login page
+        window.location.href = "/"; 
       }
     };
 
