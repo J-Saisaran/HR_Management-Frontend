@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, TextField, Typography, Container, AppBar, Box, Toolbar, CssBaseline } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import http from '../../../utlis/http';
+import './Style.css';
 import IconButton from '@mui/material/IconButton';
 
 function EmployeeLogin() {
@@ -10,6 +11,7 @@ function EmployeeLogin() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+   
     const handleSubmit = async (e) => {
         e.preventDefault();
     
@@ -20,14 +22,15 @@ function EmployeeLogin() {
             if (res.status === 200) {
                 // Assuming the response contains the employee ID
                 const id = res.data.id;
+                console.log(id);
+                // Navigate to the dashboard with the employee ID in the URL
                 navigate(`/employee_side_full/${id}`);
-            }
-        } catch (err) {
-            if (err.response && err.response.status === 401) {
-                setError(' Login failed. Please try again later.');
             } else {
                 setError('Invalid credentials');
             }
+        } catch (err) {
+            console.error(err);
+            setError('Login failed. Please try again.');
         }
     };
 
@@ -37,11 +40,11 @@ function EmployeeLogin() {
                 <CssBaseline />
                 <AppBar position="fixed">
                     <Toolbar>
-                        <Typography variant="h6" style={{ flexGrow: 1 }}>
-                            <IconButton color="inherit" onClick={() => navigate('/')}>
-                                HR Management
-                            </IconButton>
-                        </Typography>
+                    <Typography variant="h6" style={{ flexGrow: 1 }}>
+            <IconButton color="inherit" onClick={() => navigate('/')}>
+              HR Management
+            </IconButton>
+          </Typography>
                     </Toolbar>
                 </AppBar>
             </Box>
