@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Container, Button, Modal, TextField, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { Formik, Field, Form } from 'formik';
-import http from '../../../utlis/http'; // Corrected the import path
+import http from '../../../utlis/http'; 
 import Dashboard from '../dashboard/Dashboard';
-import Footer from '../footer/Footer'; // Assuming Footer component exists
+import Footer from '../footer/Footer'; 
 import MenuItem from '@mui/material/MenuItem';
 
 const InterviewScheduling = () => {
