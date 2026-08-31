@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
+import { useParams, useNavigate } from 'react-router-dom';
 import http from '../../../utlis/http';
 import {
-    Card,
-    CardContent,
-    Typography,
     Container,
     Table,
     TableBody,
@@ -16,232 +11,222 @@ import {
     TableRow,
     Paper,
     Button,
+    Chip,
+    Box,
+    Typography,
     Dialog,
-    DialogActions,
-    DialogContent,
     DialogTitle,
-    IconButton,
+    DialogContent,
+    DialogActions,
     TextField,
     MenuItem,
+    Grid
 } from '@mui/material';
-import AddCircleSharpIcon from '@mui/icons-material/AddCircleSharp';
-import EditIcon from '@mui/icons-material/Edit';
-import PersonRemoveRoundedIcon from '@mui/icons-material/PersonRemoveRounded';
-import Dashboard from '../dashboard/Dashboard';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import { TableSkeleton } from '../common/LoadingSkeleton';
+import ToastAlert from '../common/ToastAlert';
 
 const AttendanceRecords = () => {
-    const { id } = useParams(); 
-    const [attendance, setAttendance] = useState([]);
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [attendanceRecords, setAttendanceRecords] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
-    const [editMode, setEditMode] = useState(false);
-    const [currentRecordId, setCurrentRecordId] = useState(null);
+    const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
-    useEffect(() => {
-        http.get(`/attendance/${id}/`)
-            .then(res => {
-                setAttendance(res.data);
-            })
-            .catch(err => {
-                console.error(err);
-            });
-    }, [id]);
-
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
-
-    const handleClose = () => {
-        setOpen(false);
-        setEditMode(false);
-        setCurrentRecordId(null); // Reset current record ID
-    };
-
-    const handleEdit = (record) => {
-        setCurrentRecordId(record._id);
-        setEditMode(true);
-        setOpen(true);
-    };
-
-    const handleDelete = (recordId) => {
-        // Show confirmation dialog
-        const confirmDelete = window.confirm("Are you sure you want to delete this record?");
-        if (confirmDelete) {
-            http.delete(`/attendance/${recordId}`)
-                .then(() => {
-                    setAttendance(attendance.filter((record) => record._id !== recordId));
-                })
-                .catch((err) => {
-                    console.error(err);
-                });
+    const fetchAttendance = async () => {
+        setLoading(true);
+        try {
+            const res = await http.get(`/attendance/${id}`);
+            setAttendanceRecords(res.data || []);
+        } catch (err) {
+            console.error('Error fetching attendance:', err);
+            setToast({ open: true, message: 'Failed to load attendance records.', severity: 'warning' });
+        } finally {
+            setLoading(false);
         }
     };
 
-    const validationSchema = Yup.object().shape({
-        date: Yup.date().required('Date is required'),
-        status: Yup.string().required('Status is required'),
-        notes: Yup.string(),
+    useEffect(() => {
+        fetchAttendance();
+    }, [id]);
+
+    const formik = useFormik({
+        initialValues: {
+            date: new Date().toISOString().slice(0, 10),
+            status: 'Present',
+            notes: '',
+        },
+        validationSchema: Yup.object({
+            date: Yup.date().required('Date is required'),
+            status: Yup.string().required('Status is required'),
+        }),
+        onSubmit: async (values, { resetForm, setSubmitting }) => {
+            try {
+                const res = await http.post('/attendance', {
+                    employee: id,
+                    date: values.date,
+                    status: values.status,
+                    notes: values.notes,
+                });
+                setAttendanceRecords(prev => [res.data, ...prev]);
+                setToast({ open: true, message: 'Attendance record logged successfully!', severity: 'success' });
+                resetForm();
+                setOpen(false);
+            } catch (err) {
+                console.error(err);
+                setToast({ open: true, message: 'Failed to log attendance record', severity: 'error' });
+            } finally {
+                setSubmitting(false);
+            }
+        }
     });
 
-    const addAttendanceRecord = (values, { setSubmitting, resetForm }) => {
-        http.post(`/attendance/${id}/`, { ...values, employee: `${id}` })
-            .then((res) => {
-                setAttendance([...attendance, res.data]);
-                resetForm();
-                handleClose();
-            })
-            .catch((err) => {
-                console.error(err);
-            })
-            .finally(() => {
-                setSubmitting(false);
-            });
-    };
-
-    const updateAttendanceRecord = (values, { setSubmitting }) => {
-        http.put(`/attendance/${currentRecordId}`, values)
-            .then((res) => {
-                const updatedRecords = attendance.map((record) =>
-                    record._id === currentRecordId ? res.data : record
-                );
-                setAttendance(updatedRecords);
-                handleClose();
-            })
-            .catch((err) => {
-                console.error(err);
-            })
-            .finally(() => {
-                setSubmitting(false);
-            });
-    };
-
-    const handleSubmit = (values, formikBag) => {
-        if (editMode) {
-            updateAttendanceRecord(values, formikBag);
-        } else {
-            addAttendanceRecord(values, formikBag);
+    const getStatusChip = (status) => {
+        switch (status) {
+            case 'Present':
+                return <Chip label="Present" size="small" sx={{ backgroundColor: '#dcfce7', color: '#15803d', fontWeight: 700 }} />;
+            case 'Absent':
+                return <Chip label="Absent" size="small" sx={{ backgroundColor: '#fee2e2', color: '#b91c1c', fontWeight: 700 }} />;
+            case 'Late':
+                return <Chip label="Late" size="small" sx={{ backgroundColor: '#fef3c7', color: '#b45309', fontWeight: 700 }} />;
+            default:
+                return <Chip label={status || 'On Leave'} size="small" sx={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: 700 }} />;
         }
     };
 
     return (
-        <Container maxWidth="md">
-            <Dashboard />
-            <Card>
-                <CardContent>
-                    <Typography variant="h5" component="div" gutterBottom>
-                        Attendance Records
-                        <IconButton
-                            color="primary"
-                            onClick={handleClickOpen}
+        <Box sx={{ minHeight: '100vh', backgroundColor: '#f8fafc', py: 4 }}>
+            <ToastAlert
+                open={toast.open}
+                message={toast.message}
+                severity={toast.severity}
+                onClose={() => setToast(prev => ({ ...prev, open: false }))}
+            />
+
+            <Container maxWidth="lg">
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<ArrowBackIcon />}
+                            onClick={() => navigate('/employeelist')}
+                            sx={{ textTransform: 'none', borderColor: '#cbd5e1', color: '#475569', borderRadius: 2 }}
                         >
-                            <AddCircleSharpIcon />
-                        </IconButton>
-                    </Typography>
-                    <Dialog open={open} onClose={handleClose}>
-                        <DialogTitle>
-                            {editMode ? 'Edit Attendance Record' : 'Add Attendance Record'}
-                        </DialogTitle>
-                        <Formik
-                            initialValues={{
-                                date: '',
-                                status: '',
-                                notes: '',
-                            }}
-                            validationSchema={validationSchema}
-                            onSubmit={handleSubmit}
-                        >
-                            {({ errors, touched, isSubmitting }) => (
-                                <Form>
-                                    <DialogContent>
-                                        <Field
-                                            as={TextField}
-                                            name="date"
-                                            label="Date"
-                                            type="date"
-                                            fullWidth
-                                            variant="outlined"
-                                            margin="normal"
-                                            InputLabelProps={{ shrink: true }}
-                                            error={touched.date && Boolean(errors.date)}
-                                            helperText={touched.date && errors.date}
-                                        />
-                                        <Field
-                                            as={TextField}
-                                            name="status"
-                                            label="Status"
-                                            select
-                                            fullWidth
-                                            margin="normal"
-                                            variant="outlined"
-                                            error={touched.status && Boolean(errors.status)}
-                                            helperText={touched.status && errors.status}
-                                        >
-                                            <MenuItem value="Present">Present</MenuItem>
-                                            <MenuItem value="Absent">Absent</MenuItem>
-                                            <MenuItem value="On Leave">On Leave</MenuItem>
-                                            <MenuItem value="Late">Late</MenuItem>
-                                        </Field>
-                                        <Field
-                                            as={TextField}
-                                            name="notes"
-                                            label="Notes"
-                                            type="text"
-                                            margin="normal"
-                                            fullWidth
-                                            variant="outlined"
-                                            error={touched.notes && Boolean(errors.notes)}
-                                            helperText={touched.notes && errors.notes}
-                                        />
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button onClick={handleClose} color="secondary">
-                                            Cancel
-                                        </Button>
-                                        <Button type="submit" color="primary" disabled={isSubmitting}>
-                                            {editMode ? 'Update' : 'Add'}
-                                        </Button>
-                                    </DialogActions>
-                                </Form>
-                            )}
-                        </Formik>
-                    </Dialog>
-                    <TableContainer component={Paper}>
+                            Back to Employee List
+                        </Button>
+                        <div>
+                            <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                                Attendance Compliance Log
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                Monitor clock-in history, working days, and absentee records.
+                            </Typography>
+                        </div>
+                    </Box>
+
+                    <Button
+                        variant="contained"
+                        startIcon={<AddCircleOutlineIcon />}
+                        onClick={() => setOpen(true)}
+                        sx={{ backgroundColor: '#0284c7', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
+                    >
+                        + Log Attendance Record
+                    </Button>
+                </Box>
+
+                {loading ? (
+                    <TableSkeleton rows={4} cols={4} />
+                ) : attendanceRecords.length === 0 ? (
+                    <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 3, border: '1px solid #e2e8f0' }}>
+                        <Typography variant="h6" sx={{ color: '#64748b' }}>
+                            No attendance records logged for this employee.
+                        </Typography>
+                    </Paper>
+                ) : (
+                    <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.04)' }}>
                         <Table>
-                            <TableHead>
+                            <TableHead sx={{ backgroundColor: '#f8fafc' }}>
                                 <TableRow>
-                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Date</TableCell>
-                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Status</TableCell>
-                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Notes</TableCell>
-                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Edit</TableCell>
-                                    <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Remove</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Date</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Attendance Status</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Manager / Employee Notes</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {attendance.map((record) => (
-                                    <TableRow key={record._id}>
-                                        <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
-                                        <TableCell>{record.status}</TableCell>
-                                        <TableCell>{record.notes}</TableCell>
-                                        <TableCell>
-                                            <IconButton onClick={() => handleEdit(record)} color="primary">
-                                                <EditIcon />
-                                            </IconButton>
-                                        </TableCell>
-                                        <TableCell>
-                                            <IconButton
-                                                color="secondary"
-                                                onClick={() => handleDelete(record._id)}
-                                            >
-                                                <PersonRemoveRoundedIcon />
-                                            </IconButton>
-                                        </TableCell>
+                                {attendanceRecords.map((rec) => (
+                                    <TableRow key={rec._id} hover>
+                                        <TableCell sx={{ fontWeight: 600 }}>{new Date(rec.date).toLocaleDateString()}</TableCell>
+                                        <TableCell>{getStatusChip(rec.status)}</TableCell>
+                                        <TableCell sx={{ color: '#475569' }}>{rec.notes || '—'}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                     </TableContainer>
-                </CardContent>
-            </Card>
-        </Container>
+                )}
+
+                {/* Add Attendance Dialog */}
+                <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
+                    <DialogTitle sx={{ fontWeight: 700, backgroundColor: '#0f172a', color: '#ffffff' }}>
+                        Log Attendance Entry
+                    </DialogTitle>
+                    <form onSubmit={formik.handleSubmit}>
+                        <DialogContent dividers sx={{ p: 3 }}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        fullWidth
+                                        size="small"
+                                        type="date"
+                                        label="Date *"
+                                        name="date"
+                                        InputLabelProps={{ shrink: true }}
+                                        value={formik.values.date}
+                                        onChange={formik.handleChange}
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        select
+                                        fullWidth
+                                        size="small"
+                                        label="Status *"
+                                        name="status"
+                                        value={formik.values.status}
+                                        onChange={formik.handleChange}
+                                    >
+                                        <MenuItem value="Present">Present</MenuItem>
+                                        <MenuItem value="Absent">Absent</MenuItem>
+                                        <MenuItem value="Late">Late</MenuItem>
+                                        <MenuItem value="Leave">On Leave</MenuItem>
+                                    </TextField>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        fullWidth
+                                        size="small"
+                                        label="Notes / Comments"
+                                        name="notes"
+                                        value={formik.values.notes}
+                                        onChange={formik.handleChange}
+                                    />
+                                </Grid>
+                            </Grid>
+                        </DialogContent>
+                        <DialogActions sx={{ p: 2, backgroundColor: '#f8fafc' }}>
+                            <Button onClick={() => setOpen(false)} sx={{ textTransform: 'none' }}>Cancel</Button>
+                            <Button type="submit" variant="contained" sx={{ backgroundColor: '#0284c7', textTransform: 'none', fontWeight: 600 }}>
+                                Save Attendance
+                            </Button>
+                        </DialogActions>
+                    </form>
+                </Dialog>
+            </Container>
+        </Box>
     );
 };
 

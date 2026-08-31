@@ -1,183 +1,200 @@
-// src/components/employee/CombinedLeaveComponent.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import http from '../../../utlis/http';
 import {
     Container,
     Typography,
+    Paper,
+    Box,
+    Grid,
     TextField,
     Button,
-    Card,
-    CardContent,
-    Box,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Grid,
+    MenuItem,
+    AppBar,
+    Toolbar,
+    Alert,
+    CircularProgress
 } from '@mui/material';
-import Dashboard_Employee from '../dashboard/Dashboard_Employee';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EventBusyIcon from '@mui/icons-material/EventBusy';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 const EmployeeLeaveSubmit = () => {
-    const { id } = useParams(); // Get employee ID from URL params
-    const [leaveRequests, setLeaveRequests] = useState([]);
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [type, setType] = useState('');
-    const [reason, setReason] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(true); // Toggle between form and status
+    const { id } = useParams();
     const navigate = useNavigate();
+    const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
-    useEffect(() => {
-        if (!isSubmitting) {
-            // Fetch leave requests from the server when not submitting
-            http.get(`leaves/${id}`)
-                .then((res) => {
-                    setLeaveRequests(res.data);
-                })
-                .catch((err) => {
-                    console.error('Error fetching leave requests:', err);
+    const formik = useFormik({
+        initialValues: {
+            startDate: '',
+            endDate: '',
+            type: 'Casual Leave',
+            reason: '',
+        },
+        validationSchema: Yup.object({
+            startDate: Yup.date().required('Start date is required'),
+            endDate: Yup.date().required('End date is required'),
+            type: Yup.string().required('Leave type is required'),
+            reason: Yup.string().min(5, 'Please provide a clear reason').required('Reason is required'),
+        }),
+        onSubmit: async (values, { resetForm, setSubmitting }) => {
+            setErrorMessage('');
+            setSuccessMessage('');
+            try {
+                await http.post('/leaves', {
+                    employee: id,
+                    startDate: values.startDate,
+                    endDate: values.endDate,
+                    type: values.type,
+                    reason: values.reason,
+                    status: 'Pending',
                 });
-        }
-    }, [id, isSubmitting]);
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const leaveRequest = {
-            startDate,
-            endDate,
-            type,
-            reason,
-        };
-
-        http.post(`/leaves/${id}/`, leaveRequest)
-            .then(() => {
-                alert('Leave request submitted successfully!');
-                setIsSubmitting(false); // Switch to status view
-            })
-            .catch((err) => {
-                console.error('Error submitting leave request:', err);
-            });
-    };
+                setSuccessMessage('Leave request submitted successfully to HR for approval!');
+                resetForm();
+                setTimeout(() => {
+                    navigate(`/employee_side_full/${id}`);
+                }, 1500);
+            } catch (err) {
+                console.error(err);
+                setErrorMessage(err.response?.data?.message || 'Failed to submit leave request.');
+            } finally {
+                setSubmitting(false);
+            }
+        },
+    });
 
     return (
-        <Container maxWidth="md">
-            <Dashboard_Employee/>
-            <Card>
-                <CardContent>
-                    <Typography variant="h5" component="div" gutterBottom>
-                        {isSubmitting ? 'Submit Leave Request' : 'Leave Request Status'}
-                    </Typography>
-                    {isSubmitting ? (
-                        <form onSubmit={handleSubmit}>
-                            <Box mb={2}>
-                                <TextField
-                                    label="Start Date"
-                                    type="date"
-                                    fullWidth
-                                    margin='normal'
-                                    InputLabelProps={{ shrink: true }}
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    required
-                                />
-                            </Box>
-                            <Box mb={2}>
-                                <TextField
-                                    label="End Date"
-                                    type="date"
-                                    fullWidth
-                                    margin='normal'
-                                    InputLabelProps={{ shrink: true }}
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    required
-                                />
-                            </Box>
-                            <Box mb={2}>
-                                <TextField
-                                    label="Leave Type"
-                                    select
-                                    margin='normal'
-                                    fullWidth
-                                    SelectProps={{ native: true }}
-                                    value={type}
-                                    onChange={(e) => setType(e.target.value)}
-                                    required
-                                >
-                                    <option value=""></option>
-                                    <option value="Sick Leave">Sick Leave</option>
-                                    <option value="Casual Leave">Casual Leave</option>
-                                    <option value="Earned Leave">Earned Leave</option>
-                                    <option value="Other">Other</option>
-                                </TextField>
-                            </Box>
-                            <Box mb={2}>
-                                <TextField
-                                    label="Reason"
-                                    multiline
-                                    rows={4}
-                                    margin='normal'
-                                    fullWidth
-                                    value={reason}
-                                    onChange={(e) => setReason(e.target.value)}
-                                    required
-                                />
-                            </Box>
-                            <Button variant="contained" color="primary" type="submit">
-                                Submit Request
-                            </Button>
-                            <Button 
-                                variant="outlined" 
-                                color="secondary" 
-                                onClick={() => setIsSubmitting(false)} 
-                                style={{ marginLeft: '8px' }}
-                            >
-                                View Status
-                            </Button>
-                        </form>
-                    ) : (
-                        <>
-                            <Button 
-                                variant="outlined" 
-                                color="primary" 
-                                onClick={() => setIsSubmitting(true)} 
-                                style={{ marginBottom: '16px' }}
-                            >
-                                Submit New Request
-                            </Button>
-                            <TableContainer component={Paper}>
-                                <Table>
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Start Date</TableCell>
-                                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>End Date</TableCell>
-                                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Status</TableCell>
-                                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Type</TableCell>
-                                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Reason</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {leaveRequests.map((request) => (
-                                            <TableRow key={request._id}>
-                                                <TableCell>{new Date(request.startDate).toLocaleDateString()}</TableCell>
-                                                <TableCell>{new Date(request.endDate).toLocaleDateString()}</TableCell>
-                                                <TableCell>{request.status}</TableCell>
-                                                <TableCell>{request.type}</TableCell>
-                                                <TableCell>{request.reason}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        </>
+        <Box sx={{ minHeight: '100vh', backgroundColor: '#f8fafc', py: 6, display: 'flex', alignItems: 'center' }}>
+            <AppBar position="fixed" sx={{ backgroundColor: '#0f172a' }}>
+                <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <EventBusyIcon sx={{ color: '#d97706' }} />
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            Leave Request Portal
+                        </Typography>
+                    </Box>
+
+                    <Button color="inherit" startIcon={<ArrowBackIcon />} onClick={() => navigate(`/employee_side_full/${id}`)} sx={{ textTransform: 'none' }}>
+                        Back to Profile
+                    </Button>
+                </Toolbar>
+            </AppBar>
+
+            <Container maxWidth="sm" sx={{ mt: 4 }}>
+                <Paper elevation={3} sx={{ p: 4.5, borderRadius: 3.5, border: '1px solid #e2e8f0' }}>
+                    <Box sx={{ textAlign: 'center', mb: 3 }}>
+                        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, color: '#0f172a', mb: 1 }}>
+                            Submit Leave Application
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                            Your application will be routed to HR administration for review and approval.
+                        </Typography>
+                    </Box>
+
+                    {errorMessage && (
+                        <Alert severity="error" sx={{ mb: 2.5, borderRadius: 2 }}>
+                            {errorMessage}
+                        </Alert>
                     )}
-                </CardContent>
-            </Card>
-        </Container>
+
+                    {successMessage && (
+                        <Alert severity="success" sx={{ mb: 2.5, borderRadius: 2 }}>
+                            {successMessage}
+                        </Alert>
+                    )}
+
+                    <form onSubmit={formik.handleSubmit}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    type="date"
+                                    label="Start Date *"
+                                    name="startDate"
+                                    InputLabelProps={{ shrink: true }}
+                                    value={formik.values.startDate}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.startDate && Boolean(formik.errors.startDate)}
+                                    helperText={formik.touched.startDate && formik.errors.startDate}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    type="date"
+                                    label="End Date *"
+                                    name="endDate"
+                                    InputLabelProps={{ shrink: true }}
+                                    value={formik.values.endDate}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.endDate && Boolean(formik.errors.endDate)}
+                                    helperText={formik.touched.endDate && formik.errors.endDate}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    size="small"
+                                    label="Leave Category *"
+                                    name="type"
+                                    value={formik.values.type}
+                                    onChange={formik.handleChange}
+                                >
+                                    <MenuItem value="Casual Leave">Casual Leave</MenuItem>
+                                    <MenuItem value="Sick Leave">Sick Leave</MenuItem>
+                                    <MenuItem value="Earned Leave">Earned Leave</MenuItem>
+                                    <MenuItem value="Other">Other Emergency Leave</MenuItem>
+                                </TextField>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    rows={3}
+                                    size="small"
+                                    label="Reason for Leave *"
+                                    name="reason"
+                                    value={formik.values.reason}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.reason && Boolean(formik.errors.reason)}
+                                    helperText={formik.touched.reason && formik.errors.reason}
+                                />
+                            </Grid>
+                        </Grid>
+
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            fullWidth
+                            disabled={formik.isSubmitting}
+                            sx={{
+                                mt: 3,
+                                py: 1.3,
+                                borderRadius: 2,
+                                backgroundColor: '#16a34a',
+                                fontWeight: 700,
+                                textTransform: 'none',
+                                '&:hover': { backgroundColor: '#15803d' }
+                            }}
+                        >
+                            {formik.isSubmitting ? (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <CircularProgress size={20} color="inherit" />
+                                    <span>Submitting Application...</span>
+                                </Box>
+                            ) : (
+                                'Submit Leave Request'
+                            )}
+                        </Button>
+                    </form>
+                </Paper>
+            </Container>
+        </Box>
     );
 };
 
