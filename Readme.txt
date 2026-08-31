@@ -42,6 +42,7 @@ for every enum mentioned in the backend dropdown the value is mentioned in the f
  Hr Side action:
  * Hr can register
  * Hr can login
+ * when logout and use the back button in google web page it redirect to home page
  * Hr can add employee , delete employee, edit employee.
  * Hr can enter attendance for a employee
  * Hr can Approve leave request.
@@ -52,6 +53,7 @@ for every enum mentioned in the backend dropdown the value is mentioned in the f
 
  Employee side action:
  * Employee can login with the credentials given by the hr while addig the employee in the employee list
+ * when logout and use the back button in google web page it redirect to home page
  * Employee can apply for the leave
  * Employee can view the status of the leave
 

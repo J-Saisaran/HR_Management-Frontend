@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -16,73 +16,105 @@ import {
     DialogContent,
     DialogTitle,
     IconButton,
+    Tooltip,
+    Chip,
+    Box,
+    Typography,
+    Grid,
+    InputAdornment,
+    MenuItem,
+    Select,
+    FormControl,
+    InputLabel
 } from '@mui/material';
 import http from '../../../utlis/http';
-import Container from '@mui/material/Container';
 import PersonRemoveRoundedIcon from '@mui/icons-material/PersonRemoveRounded';
 import EditNoteSharpIcon from '@mui/icons-material/EditNoteSharp';
-import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import StarRateIcon from '@mui/icons-material/StarRate';
+import SearchIcon from '@mui/icons-material/Search';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useNavigate } from 'react-router-dom';
+import { TableSkeleton } from '../common/LoadingSkeleton';
+import ToastAlert from '../common/ToastAlert';
 
-function EmployeeTable() {
-
+function EmployeeTable({ refreshTrigger }) {
     const navigate = useNavigate();
-
     const [employees, setEmployees] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
 
-    // Handle the delete operation
-    const handleDelete = async (id) => {
-        const confirmed = window.confirm("Are you sure you want to delete this employee?");
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedDepartment, setSelectedDepartment] = useState('All');
+    const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+    const fetchEmployees = async () => {
+        setLoading(true);
+        try {
+            const res = await http.get('/employees');
+            setEmployees(res.data || []);
+        } catch (err) {
+            console.error('Error fetching employees:', err);
+            setToast({ open: true, message: 'Failed to fetch employees.', severity: 'warning' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchEmployees();
+    }, [refreshTrigger]);
+
+    const handleDelete = async (id, name) => {
+        const confirmed = window.confirm(`Are you sure you want to delete ${name || 'this employee'}?`);
         if (confirmed) {
             try {
-                // Perform the delete request
                 await http.delete(`/employees/${id}`);
-
-                // Update the state to remove the deleted employee
-                setEmployees(employees.filter((employee) => employee._id !== id));
+                setEmployees(prev => prev.filter(emp => emp._id !== id));
+                setToast({ open: true, message: 'Employee deleted successfully', severity: 'success' });
             } catch (error) {
-                console.error("Failed to delete employee:", error);
+                console.error('Failed to delete employee:', error);
+                setToast({ open: true, message: 'Failed to delete employee', severity: 'error' });
             }
         }
     };
 
-    // Handle Full details with handleMore
     const handleMore = (id) => {
         navigate(`/employee_full/${id}`);
-        setOpen(true);
     };
 
-    useEffect(() => {
-        http.get('/employees')
-            .then(res => {
-                setEmployees(res.data);
-            })
-            .catch(err => {
-                console.error(err);
-            });
-    }, []);
+    const handlePerformance = (id) => {
+        navigate(`/employee_performance/${id}`);
+    };
 
-    // Handle the edit button click
     const handleUpdate = async (id) => {
         try {
-            const employee = await http.get(`/employees/${id}`);
-            setSelectedEmployee(employee.data);
-
-            // Open the update form/modal
+            const res = await http.get(`/employees/${id}`);
+            setSelectedEmployee(res.data);
             setOpen(true);
         } catch (error) {
             console.error('Error fetching employee:', error);
+            setToast({ open: true, message: 'Error loading employee details for update', severity: 'error' });
         }
     };
 
-    const handlePerformance = async (id) => {
-        navigate(`/employee_performance/${id}`);
-        setOpen(true);
+    const handleExportCSV = () => {
+        if (!employees.length) return;
+        const headers = ['First Name', 'Last Name', 'Email', 'Phone', 'Position', 'Department', 'Start Date'];
+        const rows = employees.map(e => [
+            e.firstName, e.lastName, e.email, e.phone, e.position, e.department, e.startDate
+        ]);
+        const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', `employees_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
-    // Handle form submission and update the employee
     const formik = useFormik({
         initialValues: {
             firstName: '',
@@ -103,12 +135,12 @@ function EmployeeTable() {
             emergencyContactPhone: '',
         },
         validationSchema: Yup.object({
-            firstName: Yup.string().required('Required'),
-            lastName: Yup.string().required('Required'),
-            email: Yup.string().email('Invalid email address').required('Required'),
-            phone: Yup.string().required('Required'),
+            firstName: Yup.string().required('First name is required'),
+            lastName: Yup.string().required('Last name is required'),
+            email: Yup.string().email('Invalid email address').required('Email is required'),
+            phone: Yup.string().required('Phone is required'),
         }),
-        onSubmit: async (values) => {
+        onSubmit: async (values, { setSubmitting }) => {
             try {
                 const updatedEmployee = {
                     firstName: values.firstName,
@@ -133,41 +165,36 @@ function EmployeeTable() {
                     },
                 };
 
-                // Send PUT request to update employee details
                 const response = await http.put(`/employees/${selectedEmployee._id}`, updatedEmployee);
-                console.log('Updated employee:', response.data);
-
-                // Update the state with the new employee data
-                setEmployees((prev) =>
-                    prev.map((emp) => (emp._id === selectedEmployee._id ? response.data : emp))
-                );
-
-                // Close the form/modal
+                setEmployees(prev => prev.map(emp => (emp._id === selectedEmployee._id ? response.data : emp)));
                 setOpen(false);
                 setSelectedEmployee(null);
+                setToast({ open: true, message: 'Employee updated successfully!', severity: 'success' });
             } catch (error) {
                 console.error('Error updating employee:', error);
+                setToast({ open: true, message: 'Error updating employee', severity: 'error' });
+            } finally {
+                setSubmitting(false);
             }
         },
     });
 
-    // Pre-fill form fields with employee data when selected
     useEffect(() => {
         if (selectedEmployee) {
             formik.setValues({
-                firstName: selectedEmployee.firstName,
-                lastName: selectedEmployee.lastName,
-                email: selectedEmployee.email,
-                phone: selectedEmployee.phone,
+                firstName: selectedEmployee.firstName || '',
+                lastName: selectedEmployee.lastName || '',
+                email: selectedEmployee.email || '',
+                phone: selectedEmployee.phone || '',
                 street: selectedEmployee.address?.street || '',
                 city: selectedEmployee.address?.city || '',
                 state: selectedEmployee.address?.state || '',
                 postalCode: selectedEmployee.address?.postalCode || '',
                 country: selectedEmployee.address?.country || '',
-                position: selectedEmployee.position,
-                department: selectedEmployee.department,
-                startDate: selectedEmployee.startDate,
-                dateOfBirth: selectedEmployee.dateOfBirth,
+                position: selectedEmployee.position || '',
+                department: selectedEmployee.department || '',
+                startDate: selectedEmployee.startDate ? selectedEmployee.startDate.slice(0, 10) : '',
+                dateOfBirth: selectedEmployee.dateOfBirth ? selectedEmployee.dateOfBirth.slice(0, 10) : '',
                 emergencyContactName: selectedEmployee.emergencyContact?.name || '',
                 emergencyContactRelationship: selectedEmployee.emergencyContact?.relationship || '',
                 emergencyContactPhone: selectedEmployee.emergencyContact?.phone || '',
@@ -175,272 +202,233 @@ function EmployeeTable() {
         }
     }, [selectedEmployee]);
 
+    const filteredEmployees = employees.filter(emp => {
+        const matchesSearch =
+            `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (emp.email && emp.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (emp.position && emp.position.toLowerCase().includes(searchTerm.toLowerCase()));
+
+        const matchesDepartment = selectedDepartment === 'All' || emp.department === selectedDepartment;
+
+        return matchesSearch && matchesDepartment;
+    });
+
+    const departments = ['All', 'Engineering', 'Human Resources', 'Marketing', 'Sales', 'Operations', 'Finance', 'Design'];
+
     return (
-        <Container maxWidth="xl" className="employee-management-container">
-            <TableContainer component={Paper} className="table-container">
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell style={{ borderBottom: '2px solid #000', fontWeight: 'bold' }}>First Name</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000', fontWeight: 'bold'  }}>Last Name</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000', fontWeight: 'bold'  }}>Email</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000', fontWeight: 'bold'  }}>Phone</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Position</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000', fontWeight: 'bold'  }}>Department</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Edit</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Delete</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>More</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {employees.map((employee) => (
-                            <TableRow key={employee._id}>
-                                <TableCell>{employee.firstName}</TableCell>
-                                <TableCell>{employee.lastName}</TableCell>
-                                <TableCell>{employee.email}</TableCell>
-                                <TableCell>{employee.phone}</TableCell>
-                                <TableCell>{employee.position}</TableCell>
-                                <TableCell>{employee.department}</TableCell>
-                                <TableCell>
-                                    <IconButton
-                                        variant="contained"
-                                        color="secondary"
-                                        onClick={() => handleUpdate(employee._id)}
-                                    >
-                                        <EditNoteSharpIcon />
-                                    </IconButton>
-                                </TableCell>
-                                <TableCell>
-                                    <IconButton
-                                        variant="contained"
-                                        color="secondary"
-                                        onClick={() => handleDelete(employee._id)}
-                                    >
-                                        <PersonRemoveRoundedIcon />
-                                    </IconButton>
-                                </TableCell>
-                                <TableCell>
-                                    <IconButton
-                                        variant="contained"
-                                        color="secondary"
-                                        onClick={() => handleMore(employee._id)}
-                                    >
-                                        <ArrowForwardIosSharpIcon />
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            <Dialog open={open} onClose={() => setOpen(false)}>
-                <DialogTitle>Edit Employee</DialogTitle>
-                <form onSubmit={formik.handleSubmit}>
-                <DialogContent>
-                        <TextField
-                            fullWidth
-                            label="First Name"
-                            name="firstName"
-                            value={formik.values.firstName}
-                            onChange={formik.handleChange}
-                            error={formik.touched.firstName && Boolean(formik.errors.firstName)}
-                            helperText={formik.touched.firstName && formik.errors.firstName}
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Last Name"
-                            name="lastName"
-                            value={formik.values.lastName}
-                            onChange={formik.handleChange}
-                            error={formik.touched.lastName && Boolean(formik.errors.lastName)}
-                            helperText={formik.touched.lastName && formik.errors.lastName}
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Email"
-                            name="email"
-                            value={formik.values.email}
-                            onChange={formik.handleChange}
-                            error={formik.touched.email && Boolean(formik.errors.email)}
-                            helperText={formik.touched.email && formik.errors.email}
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Phone"
-                            name="phone"
-                            value={formik.values.phone}
-                            onChange={formik.handleChange}
-                            error={formik.touched.phone && Boolean(formik.errors.phone)}
-                            helperText={formik.touched.phone && formik.errors.phone}
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            id="street"
-                            name="street"
-                            label="Street"
-                            value={formik.values.street}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.street && Boolean(formik.errors.street)}
-                            margin="normal"
-                            helperText={formik.touched.street && formik.errors.street}
-                        />
-                        <TextField
-                            fullWidth
-                            id="city"
-                            name="city"
-                            label="City"
-                            value={formik.values.city}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.city && Boolean(formik.errors.city)}
-                            margin="normal"
-                            helperText={formik.touched.city && formik.errors.city}
-                        />
-                        <TextField
-                            fullWidth
-                            id="state"
-                            name="state"
-                            label="State"
-                            value={formik.values.state}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.state && Boolean(formik.errors.state)}
-                            margin="normal"
-                            helperText={formik.touched.state && formik.errors.state}
-                        />
-                        <TextField
-                            fullWidth
-                            id="postalCode"
-                            name="postalCode"
-                            label="Postal Code"
-                            value={formik.values.postalCode}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.postalCode && Boolean(formik.errors.postalCode)}
-                            margin="normal"
-                            helperText={formik.touched.postalCode && formik.errors.postalCode}
-                        />
-                        <TextField
-                            fullWidth
-                            id="country"
-                            name="country"
-                            label="Country"
-                            value={formik.values.country}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.country && Boolean(formik.errors.country)}
-                            margin="normal"
-                            helperText={formik.touched.country && formik.errors.country}
-                        />
-                        <TextField
-                            fullWidth
-                            id="position"
-                            name="position"
-                            label="Position"
-                            value={formik.values.position}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.position && Boolean(formik.errors.position)}
-                            margin="normal"
-                            helperText={formik.touched.position && formik.errors.position}
-                        />
-                        <TextField
-                            fullWidth
-                            id="department"
-                            name="department"
-                            label="Department"
-                            value={formik.values.department}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.department && Boolean(formik.errors.department)}
-                            margin="normal"
-                            helperText={formik.touched.department && formik.errors.department}
-                        />
-                        <TextField
-                            fullWidth
-                            id="startDate"
-                            name="startDate"
-                            label="Start Date"
-                            type="date"
-                            value={formik.values.startDate}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.startDate && Boolean(formik.errors.startDate)}
-                            helperText={formik.touched.startDate && formik.errors.startDate}
-                            InputLabelProps={{
-                                shrink: true,
+        <Box sx={{ mt: 2 }}>
+            <ToastAlert
+                open={toast.open}
+                message={toast.message}
+                severity={toast.severity}
+                onClose={() => setToast(prev => ({ ...prev, open: false }))}
+            />
 
-                            }} margin="normal"
-                        />
+            {/* Filter and Search Bar */}
+            <Paper elevation={0} sx={{ p: 2, mb: 3, border: '1px solid #e2e8f0', borderRadius: 3, backgroundColor: '#ffffff' }}>
+                <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={12} sm={6} md={5}>
                         <TextField
                             fullWidth
-                            id="dateOfBirth"
-                            name="dateOfBirth"
-                            label="Date of Birth"
-                            type="date"
-                            value={formik.values.dateOfBirth}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.dateOfBirth && Boolean(formik.errors.dateOfBirth)}
-                            helperText={formik.touched.dateOfBirth && formik.errors.dateOfBirth}
-                            InputLabelProps={{
-                                shrink: true,
+                            size="small"
+                            placeholder="Search by name, email, or role..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon sx={{ color: '#94a3b8' }} />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    </Grid>
 
-                            }} margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            id="emergencyContactName"
-                            name="emergencyContactName"
-                            label="Emergency Contact Name"
-                            value={formik.values.emergencyContactName}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.emergencyContactName && Boolean(formik.errors.emergencyContactName)}
-                            margin="normal"
-                            helperText={formik.touched.emergencyContactName && formik.errors.emergencyContactName}
-                        />
-                        <TextField
-                            fullWidth
-                            id="emergencyContactRelationship"
-                            name="emergencyContactRelationship"
-                            label="Emergency Contact Relationship"
-                            value={formik.values.emergencyContactRelationship}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.emergencyContactRelationship && Boolean(formik.errors.emergencyContactRelationship)}
-                            margin="normal"
-                            helperText={formik.touched.emergencyContactRelationship && formik.errors.emergencyContactRelationship}
-                        />
-                        <TextField
-                            fullWidth
-                            id="emergencyContactPhone"
-                            name="emergencyContactPhone"
-                            label="Emergency Contact Phone"
-                            value={formik.values.emergencyContactPhone}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.emergencyContactPhone && Boolean(formik.errors.emergencyContactPhone)}
-                            margin="normal"
-                            helperText={formik.touched.emergencyContactPhone && formik.errors.emergencyContactPhone}
-                        />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setOpen(false)} color="primary">
-                            Cancel
+                    <Grid item xs={12} sm={4} md={4}>
+                        <FormControl fullWidth size="small">
+                            <InputLabel id="department-filter-label">Filter Department</InputLabel>
+                            <Select
+                                labelId="department-filter-label"
+                                value={selectedDepartment}
+                                label="Filter Department"
+                                onChange={(e) => setSelectedDepartment(e.target.value)}
+                            >
+                                {departments.map((dept, idx) => (
+                                    <MenuItem key={idx} value={dept}>{dept}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} sm={2} md={3} sx={{ textAlign: { sm: 'right' } }}>
+                        <Button
+                            variant="outlined"
+                            size="medium"
+                            startIcon={<FileDownloadIcon />}
+                            onClick={handleExportCSV}
+                            sx={{ textTransform: 'none', borderColor: '#cbd5e1', color: '#475569', fontWeight: 600 }}
+                        >
+                            Export CSV
                         </Button>
-                        <Button type="submit" color="primary">
-                            Update
+                    </Grid>
+                </Grid>
+            </Paper>
+
+            {/* Employee Table or Loading Skeleton */}
+            {loading ? (
+                <TableSkeleton rows={5} cols={6} />
+            ) : filteredEmployees.length === 0 ? (
+                <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3, border: '1px solid #e2e8f0' }}>
+                    <Typography variant="h6" sx={{ color: '#64748b' }}>No employees found matching the filter criteria.</Typography>
+                </Paper>
+            ) : (
+                <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.04)', border: '1px solid #e2e8f0' }}>
+                    <Table>
+                        <TableHead sx={{ backgroundColor: '#f8fafc' }}>
+                            <TableRow>
+                                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Employee Name</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Email</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Role / Position</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Department</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Phone</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Actions</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {filteredEmployees.map((emp) => (
+                                <TableRow key={emp._id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                    <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>
+                                        {emp.firstName} {emp.lastName}
+                                    </TableCell>
+                                    <TableCell sx={{ color: '#475569' }}>{emp.email}</TableCell>
+                                    <TableCell sx={{ color: '#0284c7', fontWeight: 500 }}>{emp.position}</TableCell>
+                                    <TableCell>
+                                        <Chip
+                                            label={emp.department || 'General'}
+                                            size="small"
+                                            sx={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: 600 }}
+                                        />
+                                    </TableCell>
+                                    <TableCell sx={{ color: '#475569' }}>{emp.phone}</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>
+                                        <Tooltip title="View Full Profile">
+                                            <IconButton color="primary" size="small" onClick={() => handleMore(emp._id)}>
+                                                <VisibilityIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+
+                                        <Tooltip title="Performance Review">
+                                            <IconButton color="warning" size="small" onClick={() => handlePerformance(emp._id)}>
+                                                <StarRateIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+
+                                        <Tooltip title="Edit Details">
+                                            <IconButton color="info" size="small" onClick={() => handleUpdate(emp._id)}>
+                                                <EditNoteSharpIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+
+                                        <Tooltip title="Delete Employee">
+                                            <IconButton color="error" size="small" onClick={() => handleDelete(emp._id, `${emp.firstName} ${emp.lastName}`)}>
+                                                <PersonRemoveRoundedIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            )}
+
+            {/* Edit Dialog */}
+            <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
+                <DialogTitle sx={{ fontWeight: 700, backgroundColor: '#0f172a', color: '#ffffff' }}>
+                    Edit Employee Record
+                </DialogTitle>
+                <form onSubmit={formik.handleSubmit}>
+                    <DialogContent dividers sx={{ p: 3 }}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    label="First Name"
+                                    name="firstName"
+                                    value={formik.values.firstName}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.firstName && Boolean(formik.errors.firstName)}
+                                    helperText={formik.touched.firstName && formik.errors.firstName}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    label="Last Name"
+                                    name="lastName"
+                                    value={formik.values.lastName}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.lastName && Boolean(formik.errors.lastName)}
+                                    helperText={formik.touched.lastName && formik.errors.lastName}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    label="Email"
+                                    name="email"
+                                    value={formik.values.email}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.email && Boolean(formik.errors.email)}
+                                    helperText={formik.touched.email && formik.errors.email}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    label="Phone"
+                                    name="phone"
+                                    value={formik.values.phone}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.phone && Boolean(formik.errors.phone)}
+                                    helperText={formik.touched.phone && formik.errors.phone}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    label="Role / Position"
+                                    name="position"
+                                    value={formik.values.position}
+                                    onChange={formik.handleChange}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    label="Department"
+                                    name="department"
+                                    value={formik.values.department}
+                                    onChange={formik.handleChange}
+                                />
+                            </Grid>
+                        </Grid>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 2, backgroundColor: '#f8fafc' }}>
+                        <Button onClick={() => setOpen(false)} sx={{ textTransform: 'none', color: '#64748b' }}>Cancel</Button>
+                        <Button type="submit" variant="contained" sx={{ textTransform: 'none', backgroundColor: '#0284c7', fontWeight: 600 }}>
+                            Save Updates
                         </Button>
                     </DialogActions>
                 </form>
             </Dialog>
-        </Container>
+        </Box>
     );
 }
 

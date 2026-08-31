@@ -1,202 +1,220 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Container, Button, Modal, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField } from '@mui/material';
-import http from '../../../utlis/http'; // Axios instance
-import Dashboard from '../dashboard/Dashboard';
-import { useLocation, useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import {
+    Typography,
+    Container,
+    Button,
+    Box,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    Chip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
+} from '@mui/material';
+import http from '../../../utlis/http';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import { TableSkeleton } from '../common/LoadingSkeleton';
+import ToastAlert from '../common/ToastAlert';
 
 const CandidateApplications = () => {
     const location = useLocation();
     const jobTitle = location.state?.jobTitle;
     const [applications, setApplications] = useState([]);
-    const [open, setOpen] = useState(false);
-    const [interviewOpen, setInterviewOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [selectedApplication, setSelectedApplication] = useState(null);
-    const [interviewDetails, setInterviewDetails] = useState({ date: '', time: '', location: '' });
+    const [open, setOpen] = useState(false);
+    const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
     const { id } = useParams();
     const navigate = useNavigate();
 
     useEffect(() => {
-        http.get(`/candidates/${id}`)
-            .then(res => setApplications(res.data))
-            .catch(err => console.error(err));
+        fetchApplications();
     }, [id]);
 
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
-
-    const handleInterviewOpen = () => setInterviewOpen(true);
-    const handleInterviewClose = () => setInterviewOpen(false);
+    const fetchApplications = async () => {
+        setLoading(true);
+        try {
+            const res = await http.get(`/candidates/${id}`);
+            setApplications(res.data || []);
+        } catch (err) {
+            console.error('Error fetching applications:', err);
+            setToast({ open: true, message: 'Failed to load candidate applications.', severity: 'warning' });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleApplicationClick = (application) => {
         setSelectedApplication(application);
         setOpen(true);
     };
 
-    const handleInterviewSubmit = () => {
+    const handleInterviewNavigate = () => {
         navigate('/interview_scheduling');
-        
     };
 
     return (
-        <Container>
-            <Dashboard />
-            <Typography variant="h4" component="h1" gutterBottom>
-                Candidate Applications
-            </Typography>
+        <Box sx={{ minHeight: '100vh', backgroundColor: '#f8fafc', py: 4 }}>
+            <ToastAlert
+                open={toast.open}
+                message={toast.message}
+                severity={toast.severity}
+                onClose={() => setToast(prev => ({ ...prev, open: false }))}
+            />
 
-            <TableContainer component={Paper} style={{ marginTop: '20px' }}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Job Posting</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Candidate Name</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Candidate Email</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Resume</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Application Date</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Details</TableCell>
-                            <TableCell style={{ borderBottom: '2px solid #000' , fontWeight: 'bold' }}>Interview Schedule</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {applications.map(application => (
-                            <TableRow key={application._id}>
-                                <TableCell>{application.jobPosting?.title || 'Job Title Not Available'}</TableCell>
-                                <TableCell>{application.candidateName}</TableCell>
-                                <TableCell>{application.candidateEmail}</TableCell>
-                                <TableCell><a href={application.resume} target="_blank" rel="noopener noreferrer">View Resume</a></TableCell>
-                                <TableCell>{new Date(application.applicationDate).toLocaleDateString()}</TableCell>
-                                <TableCell>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={() => handleApplicationClick(application)}
-                                    >
-                                        View Details
-                                    </Button>
-                                </TableCell>
-                                <TableCell>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={() => handleInterviewSubmit()}
-                                    >
-                                       Interview Schedule
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <Container maxWidth="xl">
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<ArrowBackIcon />}
+                            onClick={() => navigate('/job_postings')}
+                            sx={{ textTransform: 'none', borderColor: '#cbd5e1', color: '#475569', borderRadius: 2 }}
+                        >
+                            Back to Job Postings
+                        </Button>
+                        <div>
+                            <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                                Candidate Applications
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                {jobTitle ? `Showing applicants for: ${jobTitle}` : 'Review resume submissions and manage hiring pipeline.'}
+                            </Typography>
+                        </div>
+                    </Box>
 
-            <Modal
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="application-details-title"
-                aria-describedby="application-details-description"
-            >
-                <Container
-                    style={{
-                        padding: '20px',
-                        maxWidth: '600px',
-                        maxHeight: '80vh',
-                        backgroundColor: 'white',
-                        margin: 'auto',
-                        borderRadius: '8px',
-                        overflowY: 'auto',
-                        position: 'relative',
-                        top: '10%',
-                    }}
-                >
-                    <Typography
-                        id="application-details-title"
-                        variant="h6"
-                        component="h2"
-                        gutterBottom
-                        style={{fontWeight: 'bold' }}
-                    >
-                        Application Details
-                    </Typography>
-                    {selectedApplication && (
-                        <Box>
-                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Job Posting:</span> {selectedApplication.jobPosting?.title || 'Not Available'}</Typography>
-                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Candidate Name:</span> {selectedApplication.candidateName}</Typography>
-                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Email:</span>Candidate  {selectedApplication.candidateEmail}</Typography>
-                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Phone Number:</span> {selectedApplication.phoneNumber}</Typography> {/* Phone number displayed here */}
-                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Resume:</span> <a href={selectedApplication.resume} target="_blank" rel="noopener noreferrer">View Resume</a></Typography>
-                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Cover Letter:</span> {selectedApplication.coverLetter}</Typography>
-                            <Typography variant="h6"><span style={{fontWeight: 'bold' }}>Application Date:</span> {new Date(selectedApplication.applicationDate).toLocaleDateString()}</Typography>
-                        </Box>
-                    )}
-                </Container>
-            </Modal>
-
-            <Modal
-                open={interviewOpen}
-                onClose={handleInterviewClose}
-                aria-labelledby="interview-schedule-title"
-                aria-describedby="interview-schedule-description"
-            >
-                <Container
-                    style={{
-                        padding: '20px',
-                        maxWidth: '600px',
-                        maxHeight: '80vh',
-                        backgroundColor: 'white',
-                        margin: 'auto',
-                        borderRadius: '8px',
-                        overflowY: 'auto',
-                        position: 'relative',
-                        top: '10%',
-                    }}
-                >
-                    <Typography
-                        id="interview-schedule-title"
-                        variant="h6"
-                        component="h2"
-                        gutterBottom
+                    <Button
+                        variant="contained"
+                        startIcon={<EventAvailableIcon />}
+                        onClick={handleInterviewNavigate}
+                        sx={{ backgroundColor: '#0284c7', textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
                     >
                         Schedule Interview
-                    </Typography>
-                    <Box>
-                        <TextField
-                            label="Date"
-                            type="date"
-                            fullWidth
-                            margin="normal"
-                            value={interviewDetails.date}
-                            onChange={(e) => setInterviewDetails({ ...interviewDetails, date: e.target.value })}
-                            InputLabelProps={{ shrink: true }}
-                        />
-                        <TextField
-                            label="Time"
-                            type="time"
-                            fullWidth
-                            margin="normal"
-                            value={interviewDetails.time}
-                            onChange={(e) => setInterviewDetails({ ...interviewDetails, time: e.target.value })}
-                            InputLabelProps={{ shrink: true }}
-                        />
-                        <TextField
-                            label="Location"
-                            fullWidth
-                            margin="normal"
-                            value={interviewDetails.location}
-                            onChange={(e) => setInterviewDetails({ ...interviewDetails, location: e.target.value })}
-                        />
+                    </Button>
+                </Box>
+
+                {loading ? (
+                    <TableSkeleton rows={4} cols={6} />
+                ) : applications.length === 0 ? (
+                    <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 3, border: '1px solid #e2e8f0' }}>
+                        <Typography variant="h6" sx={{ color: '#64748b' }}>
+                            No candidate applications received for this job posting yet.
+                        </Typography>
+                    </Paper>
+                ) : (
+                    <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.04)' }}>
+                        <Table>
+                            <TableHead sx={{ backgroundColor: '#f8fafc' }}>
+                                <TableRow>
+                                    <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Candidate Name</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Email</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Resume Link</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Applied Date</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Status</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Actions</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {applications.map(app => (
+                                    <TableRow key={app._id} hover>
+                                        <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>{app.candidateName}</TableCell>
+                                        <TableCell sx={{ color: '#475569' }}>{app.candidateEmail}</TableCell>
+                                        <TableCell>
+                                            {app.resume ? (
+                                                <a href={app.resume} target="_blank" rel="noopener noreferrer" style={{ color: '#0284c7', fontWeight: 600, textDecoration: 'none' }}>
+                                                    View Resume ↗
+                                                </a>
+                                            ) : (
+                                                <span style={{ color: '#94a3b8' }}>Not Provided</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell sx={{ color: '#475569' }}>
+                                            {new Date(app.applicationDate || Date.now()).toLocaleDateString()}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={app.status || 'Applied'}
+                                                size="small"
+                                                sx={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: 600 }}
+                                            />
+                                        </TableCell>
+                                        <TableCell sx={{ textAlign: 'center' }}>
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                startIcon={<VisibilityIcon />}
+                                                onClick={() => handleApplicationClick(app)}
+                                                sx={{ textTransform: 'none', borderRadius: 1.5, borderColor: '#cbd5e1' }}
+                                            >
+                                                Details
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
+
+                {/* Candidate Details Dialog */}
+                <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+                    <DialogTitle sx={{ fontWeight: 700, backgroundColor: '#0f172a', color: '#ffffff' }}>
+                        Candidate Application Profile
+                    </DialogTitle>
+                    {selectedApplication && (
+                        <DialogContent dividers sx={{ p: 3 }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <div>
+                                    <Typography variant="caption" sx={{ color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>
+                                        Candidate Name
+                                    </Typography>
+                                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                                        {selectedApplication.candidateName}
+                                    </Typography>
+                                </div>
+
+                                <div>
+                                    <Typography variant="caption" sx={{ color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>
+                                        Contact Email
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ color: '#0f172a' }}>
+                                        {selectedApplication.candidateEmail}
+                                    </Typography>
+                                </div>
+
+                                <div>
+                                    <Typography variant="caption" sx={{ color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>
+                                        Cover Letter / Notes
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: '#334155', backgroundColor: '#f1f5f9', p: 2, borderRadius: 2, mt: 0.5 }}>
+                                        {selectedApplication.coverLetter || 'No cover letter provided with application.'}
+                                    </Typography>
+                                </div>
+                            </Box>
+                        </DialogContent>
+                    )}
+                    <DialogActions sx={{ p: 2, backgroundColor: '#f8fafc' }}>
+                        <Button onClick={() => setOpen(false)} sx={{ textTransform: 'none' }}>Close</Button>
                         <Button
                             variant="contained"
-                            color="primary"
-                            style={{ marginTop: '20px' }}
-                            onClick={handleInterviewSubmit}
+                            onClick={() => { setOpen(false); navigate('/interview_scheduling'); }}
+                            sx={{ backgroundColor: '#0284c7', textTransform: 'none', fontWeight: 600 }}
                         >
                             Schedule Interview
                         </Button>
-                    </Box>
-                </Container>
-            </Modal>
-        </Container>
+                    </DialogActions>
+                </Dialog>
+            </Container>
+        </Box>
     );
 };
 
