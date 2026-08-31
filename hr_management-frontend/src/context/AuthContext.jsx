@@ -7,6 +7,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (token) {
@@ -17,74 +18,80 @@ export const AuthProvider = ({ children }) => {
           setUser(res.data);
         })
         .catch((err) => {
+          console.warn("Token validation failed or expired:", err);
           setToken(null);
           localStorage.removeItem("token");
-          console.log(err);
           setAuthToken(null);
+          setUser(null);
+        })
+        .finally(() => {
+          setLoading(false);
         });
+    } else {
+      setLoading(false);
     }
   }, [token]);
 
   const register = async (name, email, password, role) => {
     try {
       const res = await http.post("/users", { name, email, password, role });
-      const newToken = res.data;      
-      setToken(newToken);
-      localStorage.setItem("token", newToken);
-      setAuthToken(newToken);
-      const userResponse = await http.get("/users");
-      setUser(userResponse.data);
-    } catch (err) {
-      if (err.response && err.response.status === 409) { // 409 Conflict status for existing user
-        throw new Error('User already exists');
-      } else {
-        console.error("Registration Error:", err.response ? err.response.data : err.message);
-        throw new Error('Registration failed');
+      // Handle both string token and object response { token, user }
+      const newToken = typeof res.data === 'string' ? res.data : (res.data?.token || res.data);
+      
+      if (newToken && typeof newToken === 'string') {
+        setToken(newToken);
+        localStorage.setItem("token", newToken);
+        setAuthToken(newToken);
       }
+
+      if (res.data?.user) {
+        setUser(res.data.user);
+      } else {
+        const userResponse = await http.get("/users");
+        setUser(userResponse.data);
+      }
+      return res.data;
+    } catch (err) {
+      console.error("Registration Error:", err);
+      const errorMessage = err.response?.data?.message || err.response?.data || err.message || "Registration failed";
+      throw new Error(errorMessage);
     }
   };
 
   const login = async (email, password) => {
     try {
       const res = await http.post("/auth", { email, password });
-      const newToken = res.data;
-      setToken(newToken);
-      localStorage.setItem("token", newToken);
-      setAuthToken(newToken);
+      const newToken = typeof res.data === 'string' ? res.data : (res.data?.token || res.data);
 
-      const userResponse = await http.get("/users");
-      setUser(userResponse.data);
+      if (newToken && typeof newToken === 'string') {
+        setToken(newToken);
+        localStorage.setItem("token", newToken);
+        setAuthToken(newToken);
+      }
+
+      if (res.data?.user) {
+        setUser(res.data.user);
+      } else {
+        const userResponse = await http.get("/users");
+        setUser(userResponse.data);
+      }
+      return res.data;
     } catch (err) {
-      const errorMessage = err.response ? err.response.data.message : "Login failed. Please try again.";
+      console.error("Login Error:", err);
+      const errorMessage = err.response?.data?.message || err.response?.data || "Login failed. Please verify email and password.";
       throw new Error(errorMessage);
     }
   };
 
   const logout = () => {
     setToken(null);
-    localStorage.removeItem("token");  // Correct the removal of the token from localStorage
+    localStorage.removeItem("token");
     setUser(null);
     setAuthToken(null);
   };
 
-  // Handle back button after logout
-  useEffect(() => {
-    const handlePopState = () => {
-      if (!localStorage.getItem("token")) {
-        logout();
-        window.location.href = "/"; // Redirect to login page
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, register }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
